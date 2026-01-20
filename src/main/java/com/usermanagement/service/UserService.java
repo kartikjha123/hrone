@@ -4,12 +4,12 @@ import java.util.List;
 
 import com.usermanagement.entity.Privilege;
 import com.usermanagement.entity.Role;
-import com.usermanagement.entity.User;
 import com.usermanagement.requestDto.AssignPrivilegesRequest;
 import com.usermanagement.requestDto.AssignRolesRequest;
 import com.usermanagement.requestDto.PrivilegeRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
+import com.usermanagement.responseDto.PrivilegeDTO;
 import com.usermanagement.responseDto.RoleDto;
 import com.usermanagement.responseDto.UserResponseDto;
 
@@ -32,4 +32,6 @@ public interface UserService {
 	public List<RoleDto> getAllRoleWithPrivilage();
 
 	public List<RoleDto> getAllRole();
+
+	public List<PrivilegeDTO> getAllPrivilage();
 }

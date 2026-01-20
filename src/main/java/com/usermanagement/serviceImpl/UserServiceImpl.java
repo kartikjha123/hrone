@@ -329,4 +329,11 @@ public class UserServiceImpl implements UserService {
 		return roles.stream().map(r -> new RoleDto(r.getId(), r.getName(), null)).collect(Collectors.toList());
 	}
 
+	@Override
+	public List<PrivilegeDTO> getAllPrivilage() {
+		// TODO Auto-generated method stub
+		List<Privilege> privileges = privilegeRepository.findAll();
+		return privileges.stream().map(p -> new PrivilegeDTO(p.getId(), p.getName())).collect(Collectors.toList());
+	}
+
 }

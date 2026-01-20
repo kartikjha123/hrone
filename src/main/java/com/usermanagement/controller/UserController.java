@@ -15,6 +15,7 @@ import com.usermanagement.requestDto.AssignRolesRequest;
 import com.usermanagement.requestDto.PrivilegeRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
+import com.usermanagement.responseDto.PrivilegeDTO;
 import com.usermanagement.responseDto.ResponseMessageDto;
 import com.usermanagement.responseDto.RoleDto;
 import com.usermanagement.responseDto.UserResponseDto;
@@ -95,5 +96,14 @@ public class UserController {
 		String message = roles.isEmpty() ? "No Data Found" : "All Roles list fetch successfully";
 		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(),message ,roles));
 	}
+	
+	@PostMapping("/all-privilage")
+	public ResponseEntity<?> getAllPrivilage() {
+		List<PrivilegeDTO> privilages = userService.getAllPrivilage();
+		String message = privilages.isEmpty() ? "No Data Found" : "All Privilage list fetch successfully";
+		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), message, privilages));
+	}
+	
+	
 
 }
