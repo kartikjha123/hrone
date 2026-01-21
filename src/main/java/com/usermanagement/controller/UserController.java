@@ -12,17 +12,25 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.usermanagement.requestDto.AssignPrivilegesRequest;
 import com.usermanagement.requestDto.AssignRolesRequest;
+import com.usermanagement.requestDto.ItemMasterRequestDto;
 import com.usermanagement.requestDto.PrivilegeRequestDto;
+import com.usermanagement.requestDto.ProductionEntryRequestDto;
+import com.usermanagement.requestDto.ProductionFilterRequestDto;
+import com.usermanagement.requestDto.ProductionFilterRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
 import com.usermanagement.responseDto.PrivilegeDTO;
+import com.usermanagement.responseDto.ProductionEntryResponseDto;
 import com.usermanagement.responseDto.ResponseMessageDto;
 import com.usermanagement.responseDto.RoleDto;
 import com.usermanagement.responseDto.UserResponseDto;
 import com.usermanagement.service.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
+@Tag(name = "User Management", description = "APIs for User, Role and Privilege Management")
 @RestController
 @RequestMapping("/user")
 public class UserController {
@@ -30,7 +38,7 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 	
-	
+	@Operation(summary = "Create User", description = "Creates a new user in the system")
 	@PostMapping("/create")
 	public ResponseEntity<ResponseMessageDto> createUser(@Valid @RequestBody UserRequestDto userRequestDto )
 	{
@@ -39,7 +47,7 @@ public class UserController {
 		
 	}
 	
-	
+	@Operation(summary = "Create Role", description = "Creates a new role")
 	@PostMapping("/create-role")
 	public ResponseEntity<?> createRole(@Valid @RequestBody RoleRequestDto roleRequestDto)
 	{
@@ -47,6 +55,7 @@ public class UserController {
 
 	}
 	
+	@Operation(summary = "Create Privilege", description = "Creates a new privilege")
 	@PostMapping("/create-privilege")
 	public ResponseEntity<?> createPrivilege(@RequestBody PrivilegeRequestDto privilegeRequestDto)
 	{
@@ -54,6 +63,7 @@ public class UserController {
 
 	}
 	
+	@Operation(summary = "Assign Role to User", description = "Assigns a role to a user")
 	@PostMapping("/assign-role")
 	public ResponseEntity<?> assignUserWithRole(@RequestBody AssignRolesRequest assignRolesRequest)
 	{
@@ -61,6 +71,7 @@ public class UserController {
 
 	}
 	
+	@Operation(summary = "Assign Privileges to Role", description = "Assigns privileges to a role")
 	@PostMapping("/assign-privilage")
 	public ResponseEntity<?> assignRoleWithPrivillage(@RequestBody AssignPrivilegesRequest assignPrivilegesRequest )
 	{
@@ -68,6 +79,7 @@ public class UserController {
 
 	}
 	
+	@Operation(summary = "Get All Users", description = "Fetches list of all users")
 	@PostMapping("/all")
 	public ResponseEntity<ResponseMessageDto> getAllUser() {
 
@@ -78,7 +90,7 @@ public class UserController {
 		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), message, list));
 	}
 
-	
+	@Operation(summary = "Get Roles with Privileges", description = "Fetches all roles along with their privileges")
 	@PostMapping("/all-role-privilage")
 	public ResponseEntity<ResponseMessageDto> getAllRoleWithPrivilage() {
 
@@ -90,6 +102,7 @@ public class UserController {
 
 	}
 	
+	@Operation(summary = "Get All Roles", description = "Fetches all roles")
 	@PostMapping("/all-role")
 	public ResponseEntity<?> getAllRole() {
 		List<RoleDto> roles = userService.getAllRole();
@@ -97,6 +110,7 @@ public class UserController {
 		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(),message ,roles));
 	}
 	
+	@Operation(summary = "Get All Privileges", description = "Fetches all privileges")
 	@PostMapping("/all-privilage")
 	public ResponseEntity<?> getAllPrivilage() {
 		List<PrivilegeDTO> privilages = userService.getAllPrivilage();
@@ -104,6 +118,36 @@ public class UserController {
 		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), message, privilages));
 	}
 	
+	
+	@Operation(summary = "Add Item Master", description = "Create Item Master")
+	@PostMapping("/add-item")
+	public ResponseEntity<?> addItemMaster(@RequestBody ItemMasterRequestDto itemMasterRequestDto)
+	{
+		userService.addItemMaster(itemMasterRequestDto);
+		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Item Created Sucessfully"));
+	}
+	
+	
+	@Operation(summary = "Create Production Entry", description = "Creates a production entry for an employee by selecting item, quantity and work date. "
+			+ "The amount is calculated automatically based on item rate.")
+	@PostMapping("/add-production-entry")
+	public ResponseEntity<?> addProductionEntry(@RequestBody ProductionEntryRequestDto productionEntryRequestDto) {
+
+		userService.addProductionEntry(productionEntryRequestDto);
+
+		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Production Entry Created Successfully"));
+	}
+
+	@Operation(summary = "Filter Production Entries", description = "Fetch production entries based on employee, item and date range filters")
+	@PostMapping("/filter")
+	public ResponseEntity<?> filterProductionEntries(@RequestBody ProductionFilterRequestDto filterRequest) {
+
+		List<ProductionEntryResponseDto> list = userService.getAllProductionEntries(filterRequest);
+
+		String message = list.isEmpty() ? "No Production Data Found" : "Filtered Production Data Fetched Successfully";
+
+		return ResponseEntity.ok(new ResponseMessageDto(200, message, list));
+	}
 	
 
 }

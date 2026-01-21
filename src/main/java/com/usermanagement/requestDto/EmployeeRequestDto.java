@@ -26,6 +26,8 @@ public class EmployeeRequestDto {
 	private String designation;
 
 	private LocalDate joiningDate;
+	
+	private String employeeCode;
 
 	public String getFirstName() {
 		return firstName;
@@ -74,5 +76,14 @@ public class EmployeeRequestDto {
 	public void setJoiningDate(LocalDate joiningDate) {
 		this.joiningDate = joiningDate;
 	}
+
+	public String getEmployeeCode() {
+		return employeeCode;
+	}
+
+	public void setEmployeeCode(String employeeCode) {
+		this.employeeCode = employeeCode;
+	}
+	
 
 }

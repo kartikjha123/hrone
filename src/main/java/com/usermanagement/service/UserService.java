@@ -6,10 +6,14 @@ import com.usermanagement.entity.Privilege;
 import com.usermanagement.entity.Role;
 import com.usermanagement.requestDto.AssignPrivilegesRequest;
 import com.usermanagement.requestDto.AssignRolesRequest;
+import com.usermanagement.requestDto.ItemMasterRequestDto;
 import com.usermanagement.requestDto.PrivilegeRequestDto;
+import com.usermanagement.requestDto.ProductionEntryRequestDto;
+import com.usermanagement.requestDto.ProductionFilterRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
 import com.usermanagement.responseDto.PrivilegeDTO;
+import com.usermanagement.responseDto.ProductionEntryResponseDto;
 import com.usermanagement.responseDto.RoleDto;
 import com.usermanagement.responseDto.UserResponseDto;
 
@@ -34,4 +38,10 @@ public interface UserService {
 	public List<RoleDto> getAllRole();
 
 	public List<PrivilegeDTO> getAllPrivilage();
+
+	public void addItemMaster(ItemMasterRequestDto itemMasterRequestDto);
+
+	public void addProductionEntry(ProductionEntryRequestDto productionEntryRequestDto);
+	
+	public List<ProductionEntryResponseDto> getAllProductionEntries(ProductionFilterRequestDto req);
 }

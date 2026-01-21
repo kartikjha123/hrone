@@ -22,8 +22,12 @@ import com.usermanagement.responseDto.UserDto;
 import com.usermanagement.security.CustomUserDetails;
 import com.usermanagement.security.JwtTokenProvider;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Authentication", description = "APIs related to user authentication and JWT token generation")
 public class AuthController {
 
 	@Autowired
@@ -33,6 +37,7 @@ public class AuthController {
 	private JwtTokenProvider jwtTokenProvider;
 
 	@PostMapping("/login")
+	@Operation(summary = "User Login", description = "Authenticates user credentials and returns JWT token along with user details, roles, privileges, and employee information")
     public ResponseEntity<LoginResponseDto> login(@RequestBody LoginRequestDto loginRequestDto) {
 
         Authentication authentication = authenticationManager.authenticate(

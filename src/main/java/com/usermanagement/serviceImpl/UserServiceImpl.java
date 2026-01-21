@@ -1,7 +1,7 @@
 package com.usermanagement.serviceImpl;
 
+import java.time.LocalDate;
 import java.util.Collections;
-
 import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,20 +20,29 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.usermanagement.entity.Employee;
+import com.usermanagement.entity.ItemMaster;
 import com.usermanagement.entity.Privilege;
+import com.usermanagement.entity.ProductionEntry;
 import com.usermanagement.entity.Role;
 import com.usermanagement.entity.User;
+import com.usermanagement.repository.EmployeeRepository;
+import com.usermanagement.repository.ItemMasterRepository;
 import com.usermanagement.repository.PrivilegeRepository;
+import com.usermanagement.repository.ProductionEntryRepository;
 import com.usermanagement.repository.RoleRepository;
 import com.usermanagement.repository.UserRepository;
 import com.usermanagement.requestDto.AssignPrivilegesRequest;
 import com.usermanagement.requestDto.AssignRolesRequest;
 import com.usermanagement.requestDto.EmployeeRequestDto;
+import com.usermanagement.requestDto.ItemMasterRequestDto;
 import com.usermanagement.requestDto.PrivilegeRequestDto;
+import com.usermanagement.requestDto.ProductionEntryRequestDto;
+import com.usermanagement.requestDto.ProductionFilterRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
 import com.usermanagement.responseDto.EmployeeResponseDto;
 import com.usermanagement.responseDto.PrivilegeDTO;
+import com.usermanagement.responseDto.ProductionEntryResponseDto;
 import com.usermanagement.responseDto.RoleDto;
 import com.usermanagement.responseDto.UserResponseDto;
 import com.usermanagement.service.UserService;
@@ -57,6 +65,15 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	private PrivilegeRepository privilegeRepository;
+	
+	@Autowired
+	private ItemMasterRepository itemMasterRepository;
+	
+	@Autowired
+	private ProductionEntryRepository productionEntryRepository;
+	
+	@Autowired
+	private EmployeeRepository employeeRepository;
 
 	@Override
 	public UserResponseDto createUser(UserRequestDto userRequestDto) {
@@ -98,6 +115,7 @@ public class UserServiceImpl implements UserService {
 			emp.setDepartment(er.getDepartment());
 			emp.setDesignation(er.getDesignation());
 			emp.setJoiningDate(er.getJoiningDate());
+			emp.setEmployeeCode(er.getEmployeeCode());
 			// set bidirectional association
 			emp.setUser(user);
 			user.setEmployee(emp); // if you added employee field to User (see note)
@@ -335,5 +353,76 @@ public class UserServiceImpl implements UserService {
 		List<Privilege> privileges = privilegeRepository.findAll();
 		return privileges.stream().map(p -> new PrivilegeDTO(p.getId(), p.getName())).collect(Collectors.toList());
 	}
+
+	@Override
+	public void addItemMaster(ItemMasterRequestDto itemMasterRequestDto) {
+		// TODO Auto-generated method stub
+		ItemMaster itemMaster = new ItemMaster();
+		itemMaster.setItemName(itemMasterRequestDto.getItemName());
+		itemMaster.setRate(itemMasterRequestDto.getRate());
+		itemMaster.setUnit(itemMasterRequestDto.getUnit());
+		//itemMaster.setCreatedBy(getCurrentUserProfile().getUsername());
+		itemMaster.setCreatedDate(LocalDate.now()); 
+		
+		itemMasterRepository.save(itemMaster);
+		
+		
+
+	}
+
+	@Override
+	public void addProductionEntry(ProductionEntryRequestDto productionEntryRequestDto) {
+		// TODO Auto-generated method stub
+		
+		Employee emp = employeeRepository.findById(productionEntryRequestDto.getEmployeeId()) .orElseThrow(() -> new RuntimeException("Employee not found")); 
+		ItemMaster item = itemMasterRepository.findById(productionEntryRequestDto.getItemId()) .orElseThrow(() -> new RuntimeException("Item not found")); 
+		
+		ProductionEntry entry = new ProductionEntry();
+		entry.setEmployee(emp);
+		entry.setItem(item);
+		entry.setAmount(item.getRate()*productionEntryRequestDto.getQuantity());
+		entry.setWorkDate(LocalDate.now() );
+		entry.setQuantity(productionEntryRequestDto.getQuantity());
+		productionEntryRepository.save(entry);
+		
+		
+		
+		
+	}
+
+	@Override
+	   public List<ProductionEntryResponseDto> getAllProductionEntries(
+			   ProductionFilterRequestDto filter) {
+
+	        List<ProductionEntry> entries =
+	                productionEntryRepository.filterProductionEntries(
+	                        filter.getEmployeeId(),
+	                        filter.getItemId(),
+	                        filter.getFromDate(),
+	                        filter.getToDate()
+	                );
+
+	        return entries.stream().map(pe -> {
+	            ProductionEntryResponseDto dto = new ProductionEntryResponseDto();
+
+	            dto.setProductionId(pe.getId());
+	            dto.setEmployeeId(pe.getEmployee().getId());
+	            dto.setEmployeeName(
+	                    pe.getEmployee().getFirstName() + " " + pe.getEmployee().getLastName()
+	            );
+	            dto.setEmployeeCode(pe.getEmployee().getEmployeeCode());
+
+	            dto.setItemId(pe.getItem().getId());
+	            dto.setItemName(pe.getItem().getItemName());
+	            dto.setRate(pe.getItem().getRate());
+	            dto.setUnit(pe.getItem().getUnit());
+
+	            dto.setWorkDate(pe.getWorkDate());
+	            dto.setQuantity(pe.getQuantity());
+	            dto.setAmount(pe.getAmount());
+
+	            return dto;
+	        }).toList();
+	    }
 
 }

@@ -24,7 +24,7 @@ public class Employee {
 	private String phone;
 	private String department;
 	private String designation;
-
+	private String employeeCode;
 	private LocalDate joiningDate;
 
 	@OneToOne
@@ -94,6 +94,14 @@ public class Employee {
 
 	public User getUser() {
 		return user;
+	}
+
+	public String getEmployeeCode() {
+		return employeeCode;
+	}
+
+	public void setEmployeeCode(String employeeCode) {
+		this.employeeCode = employeeCode;
 	}
 
 	
