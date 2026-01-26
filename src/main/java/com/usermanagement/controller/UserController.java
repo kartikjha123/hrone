@@ -119,35 +119,9 @@ public class UserController {
 	}
 	
 	
-	@Operation(summary = "Add Item Master", description = "Create Item Master")
-	@PostMapping("/add-item")
-	public ResponseEntity<?> addItemMaster(@RequestBody ItemMasterRequestDto itemMasterRequestDto)
-	{
-		userService.addItemMaster(itemMasterRequestDto);
-		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Item Created Sucessfully"));
-	}
 	
 	
-	@Operation(summary = "Create Production Entry", description = "Creates a production entry for an employee by selecting item, quantity and work date. "
-			+ "The amount is calculated automatically based on item rate.")
-	@PostMapping("/add-production-entry")
-	public ResponseEntity<?> addProductionEntry(@RequestBody ProductionEntryRequestDto productionEntryRequestDto) {
-
-		userService.addProductionEntry(productionEntryRequestDto);
-
-		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Production Entry Created Successfully"));
-	}
-
-	@Operation(summary = "Filter Production Entries", description = "Fetch production entries based on employee, item and date range filters")
-	@PostMapping("/filter")
-	public ResponseEntity<?> filterProductionEntries(@RequestBody ProductionFilterRequestDto filterRequest) {
-
-		List<ProductionEntryResponseDto> list = userService.getAllProductionEntries(filterRequest);
-
-		String message = list.isEmpty() ? "No Production Data Found" : "Filtered Production Data Fetched Successfully";
-
-		return ResponseEntity.ok(new ResponseMessageDto(200, message, list));
-	}
+	
 	
 
 }
