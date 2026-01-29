@@ -41,7 +41,5 @@ public interface UserService {
 
 	public void addItemMaster(ItemMasterRequestDto itemMasterRequestDto);
 
-	public void addProductionEntry(ProductionEntryRequestDto productionEntryRequestDto);
 	
-	public List<ProductionEntryResponseDto> getAllProductionEntries(ProductionFilterRequestDto req);
 }

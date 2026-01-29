@@ -370,59 +370,10 @@ public class UserServiceImpl implements UserService {
 
 	}
 
-	@Override
-	public void addProductionEntry(ProductionEntryRequestDto productionEntryRequestDto) {
-		// TODO Auto-generated method stub
-		
-		Employee emp = employeeRepository.findById(productionEntryRequestDto.getEmployeeId()) .orElseThrow(() -> new RuntimeException("Employee not found")); 
-		ItemMaster item = itemMasterRepository.findById(productionEntryRequestDto.getItemId()) .orElseThrow(() -> new RuntimeException("Item not found")); 
-		
-		ProductionEntry entry = new ProductionEntry();
-		entry.setEmployee(emp);
-		entry.setItem(item);
-		entry.setAmount(item.getRate()*productionEntryRequestDto.getQuantity());
-		entry.setWorkDate(LocalDate.now() );
-		entry.setQuantity(productionEntryRequestDto.getQuantity());
-		productionEntryRepository.save(entry);
+	
 		
 		
 		
 		
-	}
-
-	@Override
-	   public List<ProductionEntryResponseDto> getAllProductionEntries(
-			   ProductionFilterRequestDto filter) {
-
-	        List<ProductionEntry> entries =
-	                productionEntryRepository.filterProductionEntries(
-	                        filter.getEmployeeId(),
-	                        filter.getItemId(),
-	                        filter.getFromDate(),
-	                        filter.getToDate()
-	                );
-
-	        return entries.stream().map(pe -> {
-	            ProductionEntryResponseDto dto = new ProductionEntryResponseDto();
-
-	            dto.setProductionId(pe.getId());
-	            dto.setEmployeeId(pe.getEmployee().getId());
-	            dto.setEmployeeName(
-	                    pe.getEmployee().getFirstName() + " " + pe.getEmployee().getLastName()
-	            );
-	            dto.setEmployeeCode(pe.getEmployee().getEmployeeCode());
-
-	            dto.setItemId(pe.getItem().getId());
-	            dto.setItemName(pe.getItem().getItemName());
-	            dto.setRate(pe.getItem().getRate());
-	            dto.setUnit(pe.getItem().getUnit());
-
-	            dto.setWorkDate(pe.getWorkDate());
-	            dto.setQuantity(pe.getQuantity());
-	            dto.setAmount(pe.getAmount());
-
-	            return dto;
-	        }).toList();
-	    }
-
+	
 }
