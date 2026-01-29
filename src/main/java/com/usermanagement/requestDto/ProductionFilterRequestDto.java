@@ -9,6 +9,9 @@ public class ProductionFilterRequestDto {
 	private LocalDate fromDate; // optional
 	private LocalDate toDate; // optional
 	
+	private Integer page;
+	private Integer size;
+	
 	public ProductionFilterRequestDto() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -52,6 +55,22 @@ public class ProductionFilterRequestDto {
 
 	public void setToDate(LocalDate toDate) {
 		this.toDate = toDate;
+	}
+
+	public Integer getPage() {
+		return page;
+	}
+
+	public void setPage(Integer page) {
+		this.page = page;
+	}
+
+	public Integer getSize() {
+		return size;
+	}
+
+	public void setSize(Integer size) {
+		this.size = size;
 	}
 	
 	
