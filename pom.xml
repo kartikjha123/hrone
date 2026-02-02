@@ -90,6 +90,12 @@
   <version>2.8.14</version> <!-- use the latest 2.x stable -->
 </dependency>
 
+<!-- MySQL JDBC Driver -->
+<dependency>
+    <groupId>com.mysql</groupId>
+    <artifactId>mysql-connector-j</artifactId>
+    <scope>runtime</scope>
+</dependency>
 
 
 
