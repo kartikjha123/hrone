@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.usermanagement.entity.Privilege;
 import com.usermanagement.entity.Role;
+import com.usermanagement.requestDto.AssignEmployeeToManagerRequestDto;
 import com.usermanagement.requestDto.AssignPrivilegesRequest;
 import com.usermanagement.requestDto.AssignRolesRequest;
 import com.usermanagement.requestDto.ItemMasterRequestDto;
@@ -12,6 +13,7 @@ import com.usermanagement.requestDto.ProductionEntryRequestDto;
 import com.usermanagement.requestDto.ProductionFilterRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
+import com.usermanagement.responseDto.EmployeeManagerMappingResponseDto;
 import com.usermanagement.responseDto.PrivilegeDTO;
 import com.usermanagement.responseDto.ProductionEntryResponseDto;
 import com.usermanagement.responseDto.RoleDto;
@@ -40,6 +42,10 @@ public interface UserService {
 	public List<PrivilegeDTO> getAllPrivilage();
 
 	public void addItemMaster(ItemMasterRequestDto itemMasterRequestDto);
+
+	public void assignEmployeeToManager(AssignEmployeeToManagerRequestDto dto);
+
+	public List<EmployeeManagerMappingResponseDto> getEmployeeManagerMapping();
 
 	
 }

@@ -8,6 +8,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 
@@ -31,6 +32,9 @@ public class Employee {
 	@JoinColumn(name = "user_id", unique = true)
 	private User user;
 
+	@ManyToOne
+	@JoinColumn(name = "manager_id")
+	private Employee manager;
 	// getters/setters
 	public void setUser(User user) {
 		this.user = user;
@@ -103,6 +107,16 @@ public class Employee {
 	public void setEmployeeCode(String employeeCode) {
 		this.employeeCode = employeeCode;
 	}
+
+	public Employee getManager() {
+		return manager;
+	}
+
+	public void setManager(Employee manager) {
+		this.manager = manager;
+	}
+
+	
 
 	
 	

@@ -10,17 +10,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.usermanagement.requestDto.AssignEmployeeToManagerRequestDto;
 import com.usermanagement.requestDto.AssignPrivilegesRequest;
 import com.usermanagement.requestDto.AssignRolesRequest;
-import com.usermanagement.requestDto.ItemMasterRequestDto;
 import com.usermanagement.requestDto.PrivilegeRequestDto;
-import com.usermanagement.requestDto.ProductionEntryRequestDto;
-import com.usermanagement.requestDto.ProductionFilterRequestDto;
-import com.usermanagement.requestDto.ProductionFilterRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
+import com.usermanagement.responseDto.EmployeeManagerMappingResponseDto;
 import com.usermanagement.responseDto.PrivilegeDTO;
-import com.usermanagement.responseDto.ProductionEntryResponseDto;
 import com.usermanagement.responseDto.ResponseMessageDto;
 import com.usermanagement.responseDto.RoleDto;
 import com.usermanagement.responseDto.UserResponseDto;
@@ -120,8 +117,28 @@ public class UserController {
 	
 	
 	
+	@Operation(summary = "Assign Employee to Manager", description = "Maps an employee under a manager")
+	@PostMapping("/assign-employee-manager")
+	public ResponseEntity<ResponseMessageDto> assignEmployeeToManager(
+			@RequestBody AssignEmployeeToManagerRequestDto dto) {
+
+		userService.assignEmployeeToManager(dto);
+
+		return ResponseEntity
+				.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Employee assigned to manager successfully"));
+	}	
 	
 	
+	@Operation(summary = "Get Employee Manager Mapping", description = "Shows which employee reports to which manager")
+	@PostMapping("/employee-manager-mapping")
+	public ResponseEntity<ResponseMessageDto> getEmployeeManagerMapping() {
+
+		List<EmployeeManagerMappingResponseDto> list = userService.getEmployeeManagerMapping();
+
+		String message = list.isEmpty() ? "No Mapping Found" : "Employee Manager Mapping fetched successfully";
+
+		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), message, list));
+	}
 	
 
 }

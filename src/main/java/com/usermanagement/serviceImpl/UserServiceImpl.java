@@ -31,6 +31,7 @@ import com.usermanagement.repository.PrivilegeRepository;
 import com.usermanagement.repository.ProductionEntryRepository;
 import com.usermanagement.repository.RoleRepository;
 import com.usermanagement.repository.UserRepository;
+import com.usermanagement.requestDto.AssignEmployeeToManagerRequestDto;
 import com.usermanagement.requestDto.AssignPrivilegesRequest;
 import com.usermanagement.requestDto.AssignRolesRequest;
 import com.usermanagement.requestDto.EmployeeRequestDto;
@@ -40,6 +41,7 @@ import com.usermanagement.requestDto.ProductionEntryRequestDto;
 import com.usermanagement.requestDto.ProductionFilterRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
+import com.usermanagement.responseDto.EmployeeManagerMappingResponseDto;
 import com.usermanagement.responseDto.EmployeeResponseDto;
 import com.usermanagement.responseDto.PrivilegeDTO;
 import com.usermanagement.responseDto.ProductionEntryResponseDto;
@@ -368,6 +370,50 @@ public class UserServiceImpl implements UserService {
 		
 		
 
+	}
+
+	@Transactional
+	public void assignEmployeeToManager(AssignEmployeeToManagerRequestDto dto) {
+
+		if (dto.getEmployeeId().equals(dto.getManagerId())) {
+			throw new RuntimeException("Employee cannot be their own manager");
+		}
+
+		Employee employee = employeeRepository.findById(dto.getEmployeeId())
+				.orElseThrow(() -> new RuntimeException("Employee not found"));
+
+		Employee manager = employeeRepository.findById(dto.getManagerId())
+				.orElseThrow(() -> new RuntimeException("Manager not found"));
+
+		employee.setManager(manager);
+		employeeRepository.save(employee);
+	}
+
+	@Override
+	public List<EmployeeManagerMappingResponseDto> getEmployeeManagerMapping() {
+
+	    List<Employee> employees = employeeRepository.findAll();
+
+	    return employees.stream().map(emp -> {
+
+	    	EmployeeManagerMappingResponseDto dto = new EmployeeManagerMappingResponseDto();
+
+	        dto.setEmployeeId(emp.getId());
+	        dto.setEmployeeCode(emp.getEmployeeCode());
+	        dto.setEmployeeName(emp.getFirstName() + " " + emp.getLastName());
+	        dto.setDepartment(emp.getDepartment());
+
+	        if (emp.getManager() != null) {
+	            dto.setManagerId(emp.getManager().getId());
+	            dto.setManagerName(
+	                emp.getManager().getFirstName() + " " +
+	                emp.getManager().getLastName()
+	            );
+	        }
+
+	        return dto;
+
+	    }).toList();
 	}
 
 	
