@@ -26,6 +26,9 @@ public interface ProductionEntryRepository  extends JpaRepository<ProductionEntr
 		    """)
 	Page<ProductionEntry> filterProductionEntries(@Param("employeeId") Long employeeId, @Param("itemId") Long itemId,
 			@Param("fromDate") LocalDate fromDate, @Param("toDate") LocalDate toDate,Pageable pageable);
+
+	@Query("SELECT SUM(pe.amount) FROM ProductionEntry pe WHERE pe.employee.id = :employeeId AND pe.status = 'APPROVED' AND pe.workDate BETWEEN :startDate AND :endDate")
+	Double sumApprovedAmountByEmployeeAndDateRange(@Param("employeeId") Long employeeId, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 	
 	
 

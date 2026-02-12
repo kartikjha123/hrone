@@ -44,6 +44,10 @@ public class ProductionEntry {
 
 	private String remarks;
 	
+	private String status;
+	
+	private String supervisorComments;
+	
 	
 
 	public ProductionEntry() {
@@ -121,6 +125,22 @@ public class ProductionEntry {
 
 	public void setRemarks(String remarks) {
 		this.remarks = remarks;
+	}
+	
+	public String getStatus() {
+		return status;
+	}
+	
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	
+	public String getSupervisorComments() {
+		return supervisorComments;
+	}
+	
+	public void setSupervisorComments(String supervisorComments) {
+		this.supervisorComments = supervisorComments;
 	}
 	
 	

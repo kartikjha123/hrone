@@ -39,4 +39,31 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
 	        }
 	    }
 
+	@Override
+	public void processYearEndCarryForward(int oldYear, int newYear) {
+		List<LeaveBalance> oldBalances = leaveBalanceRepository.findAll().stream()
+				.filter(b -> b.getYear() == oldYear)
+				.toList();
+
+		for (LeaveBalance oldBalance : oldBalances) {
+			LeaveType type = oldBalance.getLeaveType();
+			int carryForwardAmount = 0;
+
+			if (type.isCarryForwardAllowed()) {
+				carryForwardAmount = Math.min(oldBalance.getRemainingLeaves(), type.getMaxCarryForward());
+			}
+
+			LeaveBalance newBalance = new LeaveBalance();
+			newBalance.setEmployee(oldBalance.getEmployee());
+			newBalance.setLeaveType(type);
+			newBalance.setYear(newYear);
+			newBalance.setTotalLeaves(type.getMaxLeavesPerYear() + carryForwardAmount);
+			newBalance.setUsedLeaves(0);
+			newBalance.setRemainingLeaves(type.getMaxLeavesPerYear() + carryForwardAmount);
+			newBalance.setCarryForwarded(carryForwardAmount);
+
+			leaveBalanceRepository.save(newBalance);
+		}
+	}
+
 }

@@ -35,7 +35,17 @@ public class Employee {
 	@ManyToOne
 	@JoinColumn(name = "manager_id")
 	private Employee manager;
+
+	private Integer remainingAR = 6; // Default 6 AR per month/cycle
+
 	// getters/setters
+	public Integer getRemainingAR() {
+		return remainingAR;
+	}
+
+	public void setRemainingAR(Integer remainingAR) {
+		this.remainingAR = remainingAR;
+	}
 	public void setUser(User user) {
 		this.user = user;
 	}
