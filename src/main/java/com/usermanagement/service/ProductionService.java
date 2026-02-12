@@ -11,7 +11,8 @@ import com.usermanagement.responseDto.ProductionEntryResponseDto;
 public interface ProductionService {
 	
 public void addProductionEntry(ProductionEntryRequestDto productionEntryRequestDto);
-	
-public Page<ProductionEntryResponseDto> getAllProductionEntries(ProductionFilterRequestDto req);
+	public void addBulkProductionEntries(com.usermanagement.requestDto.BulkProductionRequestDto bulkRequest);
+	public void approveProductionEntry(Long entryId, String status, String comments);
+	public Page<ProductionEntryResponseDto> getAllProductionEntries(ProductionFilterRequestDto req);
 
 }
