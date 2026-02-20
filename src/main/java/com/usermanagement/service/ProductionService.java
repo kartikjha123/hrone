@@ -15,4 +15,8 @@ public void addProductionEntry(ProductionEntryRequestDto productionEntryRequestD
 	public void approveProductionEntry(Long entryId, String status, String comments);
 	public Page<ProductionEntryResponseDto> getAllProductionEntries(ProductionFilterRequestDto req);
 
+	public void updateProductionEntry(Long id, ProductionEntryRequestDto productionEntryRequestDto);
+
+	public void deleteProductionEntry(Long id);
+
 }

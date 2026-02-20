@@ -7,4 +7,6 @@ public interface PayrollService {
     Payroll processPayroll(Long employeeId, int month, int year);
     List<Payroll> getMonthlyPayrollReport(int month, int year);
     void updatePayrollStatus(Long payrollId, String status);
+
+    void deletePayroll(Long id);
 }

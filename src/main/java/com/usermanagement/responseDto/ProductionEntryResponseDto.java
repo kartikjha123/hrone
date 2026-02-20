@@ -19,13 +19,14 @@ public class ProductionEntryResponseDto {
     private LocalDate workDate;
     private Integer quantity;
     private Double amount;
+    private String status;
 	public ProductionEntryResponseDto() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 	public ProductionEntryResponseDto(Long productionId, Long employeeId, String employeeName, String employeeCode,
 			Long itemId, String itemName, Double rate, String unit, LocalDate workDate, Integer quantity,
-			Double amount) {
+			Double amount, String status) {
 		super();
 		this.productionId = productionId;
 		this.employeeId = employeeId;
@@ -38,6 +39,7 @@ public class ProductionEntryResponseDto {
 		this.workDate = workDate;
 		this.quantity = quantity;
 		this.amount = amount;
+		this.status = status;
 	}
 	public Long getProductionId() {
 		return productionId;
@@ -104,6 +106,12 @@ public class ProductionEntryResponseDto {
 	}
 	public void setAmount(Double amount) {
 		this.amount = amount;
+	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
 	}
     
     

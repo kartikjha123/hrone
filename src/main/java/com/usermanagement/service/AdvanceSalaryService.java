@@ -9,4 +9,8 @@ public interface AdvanceSalaryService {
     void approveAdvance(Long advanceId, Long adminId, String status, String comments);
     List<AdvanceSalary> getEmployeeAdvances(Long employeeId);
     List<AdvanceSalary> getAllPendingAdvances();
+
+    void updateAdvance(Long id, AdvanceSalaryRequestDto request);
+
+    void deleteAdvance(Long id);
 }

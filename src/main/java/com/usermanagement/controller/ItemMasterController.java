@@ -5,7 +5,10 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -42,7 +45,22 @@ public class ItemMasterController {
 		requestDto.setSize(requestDto.getSize() == null ? 10 : requestDto.getSize());
 
 		Page<ItemMasterResposneDto> pageResult = itemService.getAllItems(requestDto);
-		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Item Created Sucessfully",pageResult));
+		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Item Fetched Sucessfully", pageResult));
+	}
+
+	@Operation(summary = "Update Item Master", description = "Updates an existing item")
+	@PutMapping("/update/{id}")
+	public ResponseEntity<?> updateItemMaster(@PathVariable Long id,
+			@RequestBody ItemMasterRequestDto itemMasterRequestDto) {
+		itemService.updateItemMaster(id, itemMasterRequestDto);
+		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Item Updated Successfully"));
+	}
+
+	@Operation(summary = "Delete Item Master", description = "Deletes an item")
+	@DeleteMapping("/delete/{id}")
+	public ResponseEntity<?> deleteItemMaster(@PathVariable Long id) {
+		itemService.deleteItemMaster(id);
+		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Item Deleted Successfully"));
 	}
 	
 	

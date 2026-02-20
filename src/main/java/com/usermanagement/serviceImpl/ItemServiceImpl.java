@@ -53,4 +53,22 @@ public class ItemServiceImpl implements ItemService {
 				// getClass()
 				item.getUnit()));
 	}
+
+	@Override
+	public void updateItemMaster(Long id, ItemMasterRequestDto itemMasterRequestDto) {
+		ItemMaster itemMaster = itemMasterRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Item not found with id: " + id));
+		itemMaster.setItemName(itemMasterRequestDto.getItemName());
+		itemMaster.setRate(itemMasterRequestDto.getRate());
+		itemMaster.setUnit(itemMasterRequestDto.getUnit());
+		itemMasterRepository.save(itemMaster);
+	}
+
+	@Override
+	public void deleteItemMaster(Long id) {
+		if (!itemMasterRepository.existsById(id)) {
+			throw new RuntimeException("Item not found with id: " + id);
+		}
+		itemMasterRepository.deleteById(id);
+	}
 }

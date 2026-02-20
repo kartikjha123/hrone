@@ -39,4 +39,26 @@ public class PerformanceController {
         return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Fetched review history", 
                 performanceReviewRepository.findByEmployeeId(empId)));
     }
+
+    @Operation(summary = "Update Performance Review", description = "Updates an existing performance review")
+    @PutMapping("/review/{id}")
+    public ResponseEntity<?> updateReview(@PathVariable Long id, @RequestBody PerformanceReview review) {
+        PerformanceReview existingReview = performanceReviewRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Performance review not found with id: " + id));
+        existingReview.setRating(review.getRating());
+        existingReview.setComments(review.getComments());
+        existingReview.setGoals(review.getGoals());
+        performanceReviewRepository.save(existingReview);
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Performance review updated successfully"));
+    }
+
+    @Operation(summary = "Delete Performance Review", description = "Deletes a performance review")
+    @DeleteMapping("/review/{id}")
+    public ResponseEntity<?> deleteReview(@PathVariable Long id) {
+        if (!performanceReviewRepository.existsById(id)) {
+            throw new RuntimeException("Performance review not found with id: " + id);
+        }
+        performanceReviewRepository.deleteById(id);
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Performance review deleted successfully"));
+    }
 }

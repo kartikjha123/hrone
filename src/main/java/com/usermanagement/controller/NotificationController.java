@@ -30,4 +30,11 @@ public class NotificationController {
         notificationService.markAsRead(id);
         return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Notification marked as read"));
     }
+
+    @Operation(summary = "Delete Notification", description = "Deletes a notification.")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteNotification(@PathVariable Long id) {
+        notificationService.deleteNotification(id);
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Notification deleted successfully"));
+    }
 }

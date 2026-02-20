@@ -10,4 +10,8 @@ public interface AttendanceService {
     void bulkMarkHoliday(LocalDate date, String department);
     List<Attendance> getMonthlyAttendance(Long employeeId, int month, int year);
     Double calculateMonthlyOT(Long employeeId, int month, int year);
+
+    void updateAttendance(Long id, AttendanceRequestDto request);
+
+    void deleteAttendance(Long id);
 }

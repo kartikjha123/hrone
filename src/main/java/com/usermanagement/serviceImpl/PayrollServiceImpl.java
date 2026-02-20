@@ -103,4 +103,12 @@ public class PayrollServiceImpl implements PayrollService {
         payroll.setStatus(status);
         payrollRepository.save(payroll);
     }
+
+    @Override
+    public void deletePayroll(Long id) {
+        if (!payrollRepository.existsById(id)) {
+            throw new RuntimeException("Payroll record not found");
+        }
+        payrollRepository.deleteById(id);
+    }
 }

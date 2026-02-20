@@ -56,4 +56,18 @@ public class AttendanceController {
         return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Fetched monthly OT summary", 
                 attendanceService.calculateMonthlyOT(empId, month, year)));
     }
+
+    @Operation(summary = "Update Attendance", description = "Updates an existing attendance record")
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateAttendance(@PathVariable Long id, @RequestBody AttendanceRequestDto request) {
+        attendanceService.updateAttendance(id, request);
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Attendance updated successfully"));
+    }
+
+    @Operation(summary = "Delete Attendance", description = "Deletes an attendance record")
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteAttendance(@PathVariable Long id) {
+        attendanceService.deleteAttendance(id);
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Attendance deleted successfully"));
+    }
 }

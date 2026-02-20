@@ -74,4 +74,24 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .mapToDouble(a -> a.getOvertimeHours() != null ? a.getOvertimeHours() : 0.0)
                 .sum();
     }
+
+    @Override
+    public void updateAttendance(Long id, AttendanceRequestDto request) {
+        Attendance attendance = attendanceRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Attendance record not found with id: " + id));
+        attendance.setDate(request.getDate());
+        attendance.setStatus(request.getStatus());
+        attendance.setOvertimeHours(request.getOvertimeHours());
+        attendance.setPunchIn(request.getPunchIn());
+        attendance.setPunchOut(request.getPunchOut());
+        attendanceRepository.save(attendance);
+    }
+
+    @Override
+    public void deleteAttendance(Long id) {
+        if (!attendanceRepository.existsById(id)) {
+            throw new RuntimeException("Attendance record not found with id: " + id);
+        }
+        attendanceRepository.deleteById(id);
+    }
 }

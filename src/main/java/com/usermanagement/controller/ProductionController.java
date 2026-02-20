@@ -58,9 +58,24 @@ public class ProductionController {
     }
 
     @Operation(summary = "Preview Production Payment", description = "Real-time preview of calculated payment (Qty * Rate).")
-    @GetMapping("/preview-payment")
-    public ResponseEntity<?> previewPayment(@RequestParam Long itemId, @RequestParam Integer quantity) {
-        // Preview logic handled in service or calculated here
-        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Payment preview calculated"));
-    }
+	@GetMapping("/preview-payment")
+	public ResponseEntity<?> previewPayment(@RequestParam Long itemId, @RequestParam Integer quantity) {
+		// Preview logic handled in service or calculated here
+		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Payment preview calculated"));
+	}
+
+	@Operation(summary = "Update Production Entry", description = "Updates an existing production entry")
+	@PutMapping("/update/{id}")
+	public ResponseEntity<?> updateProductionEntry(@PathVariable Long id,
+			@RequestBody ProductionEntryRequestDto productionEntryRequestDto) {
+		productionService.updateProductionEntry(id, productionEntryRequestDto);
+		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Production Entry Updated Successfully"));
+	}
+
+	@Operation(summary = "Delete Production Entry", description = "Deletes a production entry")
+	@DeleteMapping("/delete/{id}")
+	public ResponseEntity<?> deleteProductionEntry(@PathVariable Long id) {
+		productionService.deleteProductionEntry(id);
+		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Production Entry Deleted Successfully"));
+	}
 }

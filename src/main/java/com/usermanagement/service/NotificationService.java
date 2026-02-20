@@ -8,4 +8,6 @@ public interface NotificationService {
     void sendNotification(Employee recipient, String title, String message, String type);
     List<Notification> getMyNotifications(Long employeeId);
     void markAsRead(Long notificationId);
+
+    void deleteNotification(Long id);
 }

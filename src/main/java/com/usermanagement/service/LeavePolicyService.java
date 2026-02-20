@@ -9,6 +9,10 @@ public interface LeavePolicyService {
 	public LeaveType createLeaveType(LeaveType leaveType);
 	
 	 public List<LeaveType> getAllLeaveTypes();
+
+	 public LeaveType updateLeaveType(Long id, LeaveType leaveType);
+
+	 public void deleteLeaveType(Long id);
 	
 
 }

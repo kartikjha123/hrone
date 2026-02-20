@@ -39,10 +39,22 @@ public class AttendanceRegularizationController {
                 arService.getEmployeeARHistory(empId)));
     }
 
-    @Operation(summary = "Get Pending AR for Manager", description = "Manager can see all AR requests waiting for approval.")
+    @Operation(summary = "Get Pending AR for Manager", description = "Fetch all pending AR requests for a manager's team.")
     @GetMapping("/pending/{managerId}")
     public ResponseEntity<?> getPending(@PathVariable Long managerId) {
-        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Fetched pending AR requests", 
-                arService.getPendingARForManager(managerId)));
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Fetched pending AR requests", arService.getPendingARForManager(managerId)));
+    }
+
+    @Operation(summary = "Update Attendance Regularization Request", description = "Updates an existing pending AR request")
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateAR(@PathVariable Long id, @RequestBody AttendanceRegularization request) {
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "AR request updated successfully", arService.updateAR(id, request)));
+    }
+
+    @Operation(summary = "Delete Attendance Regularization Request", description = "Deletes a pending AR request")
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteAR(@PathVariable Long id) {
+        arService.deleteAR(id);
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "AR request deleted successfully"));
     }
 }

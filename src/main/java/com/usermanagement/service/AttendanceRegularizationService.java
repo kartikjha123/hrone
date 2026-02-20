@@ -8,4 +8,8 @@ public interface AttendanceRegularizationService {
     void approveAR(Long arId, String status, String comment);
     List<AttendanceRegularization> getEmployeeARHistory(Long employeeId);
     List<AttendanceRegularization> getPendingARForManager(Long managerId);
+
+    AttendanceRegularization updateAR(Long id, AttendanceRegularization arRequest);
+
+    void deleteAR(Long id);
 }

@@ -47,4 +47,18 @@ public class AdvanceSalaryController {
     public ResponseEntity<?> getPendingAdvances() {
         return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Fetched pending advances", advanceSalaryService.getAllPendingAdvances()));
     }
+
+    @Operation(summary = "Update Advance Salary Request", description = "Updates an existing pending advance salary request")
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateAdvance(@PathVariable Long id, @RequestBody AdvanceSalaryRequestDto request) {
+        advanceSalaryService.updateAdvance(id, request);
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Advance salary request updated successfully"));
+    }
+
+    @Operation(summary = "Delete Advance Salary Request", description = "Deletes a pending advance salary request")
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteAdvance(@PathVariable Long id) {
+        advanceSalaryService.deleteAdvance(id);
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Advance salary request deleted successfully"));
+    }
 }

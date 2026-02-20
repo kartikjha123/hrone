@@ -60,4 +60,27 @@ public class AdvanceSalaryServiceImpl implements AdvanceSalaryService {
     public List<AdvanceSalary> getAllPendingAdvances() {
         return advanceSalaryRepository.findByStatus("PENDING");
     }
+
+    @Override
+    public void updateAdvance(Long id, AdvanceSalaryRequestDto request) {
+        AdvanceSalary advance = advanceSalaryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Advance request not found"));
+        if (!"PENDING".equals(advance.getStatus())) {
+            throw new RuntimeException("Only pending advance requests can be updated");
+        }
+        advance.setAmount(request.getAmount());
+        advance.setReason(request.getReason());
+        advance.setRequestDate(request.getRequestDate());
+        advanceSalaryRepository.save(advance);
+    }
+
+    @Override
+    public void deleteAdvance(Long id) {
+        AdvanceSalary advance = advanceSalaryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Advance request not found"));
+        if (!"PENDING".equals(advance.getStatus())) {
+            throw new RuntimeException("Only pending advance requests can be deleted");
+        }
+        advanceSalaryRepository.delete(advance);
+    }
 }

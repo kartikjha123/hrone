@@ -2,6 +2,7 @@ package com.usermanagement.serviceImpl;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,8 +68,17 @@ public class LeaveApplicationServiceImpl implements LeaveApplicationService {
 	}
 
 	@Override
-	public LeaveApplication getAllApplyLeaveByEmployee() {
-		// TODO Auto-generated method stub
-		return null;
+	public List<LeaveApplication> getAllApplyLeaveByEmployee(Long employeeId) {
+		return leaveApplicationRepository.findByEmployeeId(employeeId);
+	}
+
+	@Override
+	public void cancelLeave(Long id) {
+		LeaveApplication leaveApplication = leaveApplicationRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("Leave application not found with id: " + id));
+		if (!"PENDING".equals(leaveApplication.getStatus())) {
+			throw new RuntimeException("Only pending leave applications can be cancelled");
+		}
+		leaveApplicationRepository.delete(leaveApplication);
 	}
 }

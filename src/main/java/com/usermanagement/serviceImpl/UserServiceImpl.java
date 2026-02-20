@@ -392,34 +392,83 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public List<EmployeeManagerMappingResponseDto> getEmployeeManagerMapping() {
 
-	    List<Employee> employees = employeeRepository.findAll();
+		List<Employee> employees = employeeRepository.findAll();
 
-	    return employees.stream().map(emp -> {
+		return employees.stream().map(emp -> {
 
-	    	EmployeeManagerMappingResponseDto dto = new EmployeeManagerMappingResponseDto();
-
-	        dto.setEmployeeId(emp.getId());
-	        dto.setEmployeeCode(emp.getEmployeeCode());
-	        dto.setEmployeeName(emp.getFirstName() + " " + emp.getLastName());
-	        dto.setDepartment(emp.getDepartment());
-
-	        if (emp.getManager() != null) {
-	            dto.setManagerId(emp.getManager().getId());
-	            dto.setManagerName(
-	                emp.getManager().getFirstName() + " " +
-	                emp.getManager().getLastName()
-	            );
-	        }
-
-	        return dto;
-
-	    }).toList();
+			EmployeeManagerMappingResponseDto dto = new EmployeeManagerMappingResponseDto();
+			dto.setEmployeeId(emp.getId());
+			dto.setEmployeeName(emp.getFirstName() + " " + emp.getLastName());
+			if (emp.getManager() != null) {
+				dto.setManagerId(emp.getManager().getId());
+				dto.setManagerName(emp.getManager().getFirstName() + " " + emp.getManager().getLastName());
+			}
+			return dto;
+		}).collect(Collectors.toList());
 	}
 
-	
-		
-		
-		
-		
-	
+	@Override
+	public UserResponseDto updateUser(Long id, UserRequestDto userRequestDto) {
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("User not found with id: " + id));
+
+		user.setUsername(userRequestDto.getUsername());
+		user.setEmail(userRequestDto.getEmail());
+		if (userRequestDto.getPassword() != null && !userRequestDto.getPassword().isEmpty()) {
+			user.setPassword(passwordEncoder.encode(userRequestDto.getPassword()));
+		}
+
+		if (userRequestDto.getRoles() != null && !userRequestDto.getRoles().isEmpty()) {
+			Set<Role> roles = new HashSet<>();
+			for (String rn : userRequestDto.getRoles()) {
+				roleRepository.findByName(rn).ifPresent(roles::add);
+			}
+			user.setRoles(roles);
+		}
+
+		User updatedUser = userRepository.save(user);
+		return mapToUserResponseDto(updatedUser);
+	}
+
+	@Override
+	public void deleteUser(Long id) {
+		if (!userRepository.existsById(id)) {
+			throw new EntityNotFoundException("User not found with id: " + id);
+		}
+		userRepository.deleteById(id);
+	}
+
+	@Override
+	public RoleDto updateRole(Long id, RoleRequestDto roleRequestDto) {
+		Role role = roleRepository.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("Role not found with id: " + id));
+		role.setName(roleRequestDto.getName());
+		Role updatedRole = roleRepository.save(role);
+		return mapToRoleDto(updatedRole);
+	}
+
+	@Override
+	public void deleteRole(Long id) {
+		if (!roleRepository.existsById(id)) {
+			throw new EntityNotFoundException("Role not found with id: " + id);
+		}
+		roleRepository.deleteById(id);
+	}
+
+	@Override
+	public Privilege updatePrivilege(Long id, PrivilegeRequestDto privilegeRequestDto) {
+		Privilege privilege = privilegeRepository.findById(id)
+				.orElseThrow(() -> new EntityNotFoundException("Privilege not found with id: " + id));
+		privilege.setName(privilegeRequestDto.getName());
+		return privilegeRepository.save(privilege);
+	}
+
+	@Override
+	public void deletePrivilege(Long id) {
+		if (!privilegeRepository.existsById(id)) {
+			throw new EntityNotFoundException("Privilege not found with id: " + id);
+		}
+		privilegeRepository.deleteById(id);
+	}
+
 }

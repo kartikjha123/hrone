@@ -47,5 +47,15 @@ public interface UserService {
 
 	public List<EmployeeManagerMappingResponseDto> getEmployeeManagerMapping();
 
-	
+	public UserResponseDto updateUser(Long id, UserRequestDto userRequestDto);
+
+	public void deleteUser(Long id);
+
+	public RoleDto updateRole(Long id, RoleRequestDto roleRequestDto);
+
+	public void deleteRole(Long id);
+
+	public Privilege updatePrivilege(Long id, PrivilegeRequestDto privilegeRequestDto);
+
+	public void deletePrivilege(Long id);
 }

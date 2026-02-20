@@ -84,4 +84,30 @@ public class AttendanceRegularizationServiceImpl implements AttendanceRegulariza
     public List<AttendanceRegularization> getPendingARForManager(Long managerId) {
         return arRepository.findByManagerIdAndStatus(managerId, "PENDING");
     }
+
+    @Override
+    @Transactional
+    public AttendanceRegularization updateAR(Long id, AttendanceRegularization arRequest) {
+        AttendanceRegularization ar = arRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("AR request not found"));
+        if (!"PENDING".equals(ar.getStatus())) {
+            throw new RuntimeException("Only pending AR requests can be updated");
+        }
+        ar.setMissingDate(arRequest.getMissingDate());
+        ar.setReason(arRequest.getReason());
+       // ar.setRequestedPunchIn(arRequest.getRequestedPunchIn());
+       // ar.setRequestedPunchOut(arRequest.getRequestedPunchOut());
+        return arRepository.save(ar);
+    }
+
+    @Override
+    @Transactional
+    public void deleteAR(Long id) {
+        AttendanceRegularization ar = arRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("AR request not found"));
+        if (!"PENDING".equals(ar.getStatus())) {
+            throw new RuntimeException("Only pending AR requests can be deleted");
+        }
+        arRepository.delete(ar);
+    }
 }

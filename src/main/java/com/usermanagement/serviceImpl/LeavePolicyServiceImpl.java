@@ -27,4 +27,20 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		return leaveTypeRepository.findAll();
 	}
 
+	@Override
+	public LeaveType updateLeaveType(Long id, LeaveType leaveType) {
+		LeaveType existingLeaveType = leaveTypeRepository.findById(id)
+				.orElseThrow(() -> new RuntimeException("LeaveType not found with id: " + id));
+		existingLeaveType.setName(leaveType.getName());
+		//existingLeaveType.setDefaultDays(leaveType.getDefaultDays());
+		return leaveTypeRepository.save(existingLeaveType);
+	}
+
+	@Override
+	public void deleteLeaveType(Long id) {
+		if (!leaveTypeRepository.existsById(id)) {
+			throw new RuntimeException("LeaveType not found with id: " + id);
+		}
+		leaveTypeRepository.deleteById(id);
+	}
 }

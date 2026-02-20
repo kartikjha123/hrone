@@ -15,4 +15,8 @@ public interface ItemService {
 	
 	public Page<ItemMasterResposneDto> getAllItems(Pageable pageable);
 
+	public void updateItemMaster(Long id, ItemMasterRequestDto itemMasterRequestDto);
+
+	public void deleteItemMaster(Long id);
+
 }
