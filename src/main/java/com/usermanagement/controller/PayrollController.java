@@ -3,6 +3,8 @@ package com.usermanagement.controller;
 import com.usermanagement.entity.Payroll;
 import com.usermanagement.repository.PayrollRepository;
 import com.usermanagement.responseDto.ResponseMessageDto;
+import com.usermanagement.requestDto.ProcessPayrollRequestDto;
+import com.usermanagement.requestDto.PayrollStatusUpdateRequestDto;
 import com.usermanagement.service.PayrollService;
 import com.usermanagement.service.PdfService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -33,12 +35,9 @@ public class PayrollController {
 
     @Operation(summary = "Process Monthly Payroll", description = "Calculate net salary including production, attendance, OT and advance deductions.")
     @PostMapping("/process")
-    public ResponseEntity<?> processPayroll(
-            @RequestParam Long employeeId,
-            @RequestParam int month,
-            @RequestParam int year) {
+    public ResponseEntity<?> processPayroll(@RequestBody ProcessPayrollRequestDto request) {
         return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Payroll processed successfully", 
-                payrollService.processPayroll(employeeId, month, year)));
+                payrollService.processPayroll(request.getEmployeeId(), request.getMonth(), request.getYear())));
     }
 
     @Operation(summary = "Get Monthly Payroll Report", description = "Fetch all payroll records for a specific month.")
@@ -52,10 +51,8 @@ public class PayrollController {
 
     @Operation(summary = "Update Payroll Status", description = "Mark payroll as PAID or APPROVED.")
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateStatus(
-            @PathVariable Long id,
-            @RequestParam String status) {
-        payrollService.updatePayrollStatus(id, status);
+    public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestBody PayrollStatusUpdateRequestDto request) {
+        payrollService.updatePayrollStatus(id, request.getStatus());
         return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Payroll status updated successfully"));
     }
 

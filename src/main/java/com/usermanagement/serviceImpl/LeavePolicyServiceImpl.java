@@ -32,7 +32,10 @@ public class LeavePolicyServiceImpl implements LeavePolicyService {
 		LeaveType existingLeaveType = leaveTypeRepository.findById(id)
 				.orElseThrow(() -> new RuntimeException("LeaveType not found with id: " + id));
 		existingLeaveType.setName(leaveType.getName());
-		//existingLeaveType.setDefaultDays(leaveType.getDefaultDays());
+		existingLeaveType.setMaxLeavesPerYear(leaveType.getMaxLeavesPerYear());
+		existingLeaveType.setCarryForwardAllowed(leaveType.isCarryForwardAllowed());
+		existingLeaveType.setMaxCarryForward(leaveType.getMaxCarryForward());
+		existingLeaveType.setEncashmentAllowed(leaveType.isEncashmentAllowed());
 		return leaveTypeRepository.save(existingLeaveType);
 	}
 

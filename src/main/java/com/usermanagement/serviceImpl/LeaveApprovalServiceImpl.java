@@ -26,8 +26,6 @@ public class LeaveApprovalServiceImpl implements LeaveApprovalService {
 	@Override
 	@Transactional
 	public void approveLeave(ApproveLeaveRequestDto requestDto) {
-		// TODO Auto-generated method stub
-		
 		  LeaveApplication app = leaveApplicationRepository.findById(requestDto.getLeaveApplicationId()).orElseThrow();
 	      LeaveBalance balance = leaveBalanceRepository.findByEmployeeIdAndLeaveTypeIdAndYear(app.getEmployee().getId(),app.getLeaveType().getId(),
 	         app.getFromDate().getYear()).orElseThrow();
@@ -39,6 +37,8 @@ public class LeaveApprovalServiceImpl implements LeaveApprovalService {
 	        app.setManagerId(app.getManagerId());
 	        app.setManagerComment(requestDto.getComment());
 	        app.setActionDate(LocalDateTime.now());
+	        leaveBalanceRepository.save(balance);
+	        leaveApplicationRepository.save(app);
 	    }
 }
 

@@ -2,6 +2,7 @@ package com.usermanagement.controller;
 
 import com.usermanagement.entity.SalaryStructure;
 import com.usermanagement.responseDto.ResponseMessageDto;
+import com.usermanagement.requestDto.SalaryStructureRequestDto;
 import com.usermanagement.service.SalaryStructureService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +21,14 @@ public class SalaryStructureController {
 
     @Operation(summary = "Save or Update Salary Structure")
     @PostMapping("/{employeeId}")
-    public ResponseEntity<?> saveOrUpdate(@PathVariable Long employeeId, @RequestBody SalaryStructure structure) {
+    public ResponseEntity<?> saveOrUpdate(@PathVariable Long employeeId, @RequestBody SalaryStructureRequestDto request) {
+        SalaryStructure structure = new SalaryStructure();
+        structure.setBasic(request.getBasic());
+        structure.setHra(request.getHra());
+        structure.setDa(request.getDa());
+        structure.setOtherAllowances(request.getOtherAllowances());
+        structure.setPfDeduction(request.getPfDeduction());
+        structure.setEsiDeduction(request.getEsiDeduction());
         return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Salary structure saved successfully", 
                 salaryStructureService.saveOrUpdate(employeeId, structure)));
     }

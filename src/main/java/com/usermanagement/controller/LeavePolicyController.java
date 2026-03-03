@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.usermanagement.entity.LeaveType;
+import com.usermanagement.requestDto.LeaveTypeRequestDto;
 import com.usermanagement.responseDto.ResponseMessageDto;
 import com.usermanagement.service.LeavePolicyService;
 
@@ -26,7 +27,13 @@ public class LeavePolicyController {
 	private LeavePolicyService service;
 
 	@PostMapping
-	public ResponseEntity<?> create(@RequestBody LeaveType leaveType) {
+	public ResponseEntity<?> create(@RequestBody LeaveTypeRequestDto request) {
+		LeaveType leaveType = new LeaveType();
+		leaveType.setName(request.getName());
+		leaveType.setMaxLeavesPerYear(request.getMaxLeavesPerYear());
+		leaveType.setCarryForwardAllowed(request.isCarryForwardAllowed());
+		leaveType.setMaxCarryForward(request.getMaxCarryForward());
+		leaveType.setEncashmentAllowed(request.isEncashmentAllowed());
 		service.createLeaveType(leaveType);
 		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Leave Created Sucessfully"));
 	}
@@ -43,7 +50,13 @@ public class LeavePolicyController {
 	}
 
 	@PutMapping("/{id}")
-	public ResponseEntity<?> update(@PathVariable Long id, @RequestBody LeaveType leaveType) {
+	public ResponseEntity<?> update(@PathVariable Long id, @RequestBody LeaveTypeRequestDto request) {
+		LeaveType leaveType = new LeaveType();
+		leaveType.setName(request.getName());
+		leaveType.setMaxLeavesPerYear(request.getMaxLeavesPerYear());
+		leaveType.setCarryForwardAllowed(request.isCarryForwardAllowed());
+		leaveType.setMaxCarryForward(request.getMaxCarryForward());
+		leaveType.setEncashmentAllowed(request.isEncashmentAllowed());
 		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Leave Type Updated Successfully",
 				service.updateLeaveType(id, leaveType)));
 	}
