@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
 
 import com.usermanagement.entity.Employee;
@@ -113,7 +114,9 @@ public class ProductionServiceImpl implements ProductionService {
 	public Page<ProductionEntryResponseDto> getAllProductionEntries(ProductionFilterRequestDto req) {
 		Pageable pageable = PageRequest.of(req.getPage(), req.getSize());
 		// Basic implementation without full filtering logic for now
-		return productionEntryRepository.findAll(pageable).map(this::mapToResponseDto);
+		Page<ProductionEntry> filterProductionEntries =	productionEntryRepository.filterProductionEntries(req.getEmployeeId(), req.getItemId(), req.getFromDate(), req.getToDate(), pageable);
+		
+		return filterProductionEntries.map(this::mapToResponseDto);
 	}
 
 	@Override
@@ -149,6 +152,12 @@ public class ProductionServiceImpl implements ProductionService {
 		dto.setAmount(entry.getAmount());
 		dto.setStatus(entry.getStatus());
 		dto.setWorkDate(entry.getWorkDate());
+		dto.setItemId(entry.getItem().getId());
+		dto.setItemName(entry.getItem().getItemName());
+		dto.setRate(entry.getItem().getRate());
+		dto.setEmployeeCode(entry.getEmployee().getEmployeeCode());
+		dto.setEmployeeId(entry.getEmployee().getId());
+		dto.setUnit(entry.getItem().getUnit());
 		dto.setEmployeeName(entry.getEmployee().getFirstName() + " " + entry.getEmployee().getLastName());
 		return dto;
 	}

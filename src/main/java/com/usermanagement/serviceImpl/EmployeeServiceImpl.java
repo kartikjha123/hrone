@@ -1,20 +1,29 @@
 package com.usermanagement.serviceImpl;
 
+import java.time.LocalDate;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.usermanagement.entity.Employee;
 import com.usermanagement.repository.EmployeeRepository;
 import com.usermanagement.service.EmployeeService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import java.util.List;
+import com.usermanagement.service.LeaveBalanceService;
 
 @Service
 public class EmployeeServiceImpl implements EmployeeService {
 
     @Autowired
     private EmployeeRepository employeeRepository;
+    
+    @Autowired
+    LeaveBalanceService leaLeaveBalanceService;
 
     @Override
     public Employee createEmployee(Employee employee) {
+    	
+    	leaLeaveBalanceService.createLeaveBalance(employee, getCurrentFinancialYear());
         return employeeRepository.save(employee);
     }
 
@@ -57,5 +66,13 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new RuntimeException("Manager not found"));
         emp.setManager(manager);
         employeeRepository.save(emp);
+    }
+    
+    public int getCurrentFinancialYear() {
+        LocalDate today = LocalDate.now();
+        int year = today.getYear();
+        int month = today.getMonthValue();
+
+        return (month >= 4) ? year : year - 1;
     }
 }

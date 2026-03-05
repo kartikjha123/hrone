@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 import com.usermanagement.entity.Employee;
 import com.usermanagement.entity.ItemMaster;
 import com.usermanagement.entity.Privilege;
-import com.usermanagement.entity.ProductionEntry;
 import com.usermanagement.entity.Role;
 import com.usermanagement.entity.User;
 import com.usermanagement.repository.EmployeeRepository;
@@ -37,16 +36,14 @@ import com.usermanagement.requestDto.AssignRolesRequest;
 import com.usermanagement.requestDto.EmployeeRequestDto;
 import com.usermanagement.requestDto.ItemMasterRequestDto;
 import com.usermanagement.requestDto.PrivilegeRequestDto;
-import com.usermanagement.requestDto.ProductionEntryRequestDto;
-import com.usermanagement.requestDto.ProductionFilterRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
 import com.usermanagement.responseDto.EmployeeManagerMappingResponseDto;
 import com.usermanagement.responseDto.EmployeeResponseDto;
 import com.usermanagement.responseDto.PrivilegeDTO;
-import com.usermanagement.responseDto.ProductionEntryResponseDto;
 import com.usermanagement.responseDto.RoleDto;
 import com.usermanagement.responseDto.UserResponseDto;
+import com.usermanagement.service.LeaveBalanceService;
 import com.usermanagement.service.UserService;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -76,6 +73,9 @@ public class UserServiceImpl implements UserService {
 	
 	@Autowired
 	private EmployeeRepository employeeRepository;
+	
+	@Autowired
+	private LeaveBalanceService leaveBalanceService;
 
 	@Override
 	public UserResponseDto createUser(UserRequestDto userRequestDto) {
@@ -123,7 +123,8 @@ public class UserServiceImpl implements UserService {
 			user.setEmployee(emp); // if you added employee field to User (see note)
 		}
 
-		userRepository.save(user);
+	User us =	userRepository.save(user);
+	leaveBalanceService.createLeaveBalance(us.getEmployee(), 2026);
 
 		return mapToUserResponseDto(user);
 	}
