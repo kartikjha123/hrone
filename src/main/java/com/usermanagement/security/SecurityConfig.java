@@ -49,7 +49,7 @@ public class SecurityConfig {
             // enable CORS support (will use corsConfigurationSource bean)
             .cors(cors -> { })
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/user/**", "/h2-console/**","/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html","/v3/api-docs.yaml","/items/**").permitAll()
+                .requestMatchers("/api/auth/**", "/user/**", "/h2-console/**","/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html","/v3/api-docs.yaml","/items/**","/backend-running").permitAll()
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

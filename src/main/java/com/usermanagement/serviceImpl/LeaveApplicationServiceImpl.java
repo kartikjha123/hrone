@@ -17,6 +17,7 @@ import com.usermanagement.repository.LeaveApplicationRepository;
 import com.usermanagement.repository.LeaveBalanceRepository;
 import com.usermanagement.repository.LeaveTypeRepository;
 import com.usermanagement.requestDto.LeaveRequestDto;
+import com.usermanagement.responseDto.LeaveApplicationResponseDto;
 import com.usermanagement.service.LeaveApplicationService;
 
 import jakarta.transaction.Transactional;
@@ -68,10 +69,32 @@ public class LeaveApplicationServiceImpl implements LeaveApplicationService {
 	}
 
 	@Override
-	public List<LeaveApplication> getAllApplyLeaveByEmployee(Long employeeId) {
-		return leaveApplicationRepository.findByEmployeeId(employeeId);
+	public List<LeaveApplicationResponseDto> getAllApplyLeaveByEmployee(Long employeeId) {
+		//return leaveApplicationRepository.findByEmployeeId(employeeId);
+		
+		List<LeaveApplication> list = leaveApplicationRepository.findByEmployeeId(employeeId);
+
+		return list.stream().map(this::mapToDto).toList();
 	}
 
+	
+	private LeaveApplicationResponseDto mapToDto(LeaveApplication leave) {
+
+		LeaveApplicationResponseDto dto = new LeaveApplicationResponseDto();
+
+		dto.setId(leave.getId());
+		dto.setEmployeeName(leave.getEmployee().getFirstName()+" "+leave.getEmployee().getLastName());
+		dto.setLeaveType(leave.getLeaveType().getName());
+		dto.setFromDate(leave.getFromDate());
+		dto.setToDate(leave.getToDate());
+		dto.setTotalDays(leave.getTotalDays());
+		dto.setReason(leave.getReason());
+		dto.setStatus(leave.getStatus());
+		dto.setManagerComment(leave.getManagerComment());
+
+		return dto;
+	}
+	
 	@Override
 	public void cancelLeave(Long id) {
 		LeaveApplication leaveApplication = leaveApplicationRepository.findById(id)

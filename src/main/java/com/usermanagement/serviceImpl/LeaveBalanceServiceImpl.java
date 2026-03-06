@@ -10,6 +10,7 @@ import com.usermanagement.entity.LeaveBalance;
 import com.usermanagement.entity.LeaveType;
 import com.usermanagement.repository.LeaveBalanceRepository;
 import com.usermanagement.repository.LeaveTypeRepository;
+import com.usermanagement.responseDto.LeaveBalanceResponseDTO;
 import com.usermanagement.service.LeaveBalanceService;
 
 @Service
@@ -66,4 +67,23 @@ public class LeaveBalanceServiceImpl implements LeaveBalanceService {
 		}
 	}
 
-}
+	@Override
+	public List<LeaveBalanceResponseDTO> getLeaveBalance(Long employeeId, int year) {
+		  List<LeaveBalance> balances = leaveBalanceRepository.findByEmployeeIdAndYear(employeeId, year);
+
+		    return balances.stream().map(lb -> new LeaveBalanceResponseDTO(
+		            lb.getLeaveType().getName(),
+		            lb.getYear(),
+		            lb.getTotalLeaves(),
+		            lb.getUsedLeaves(),
+		            lb.getRemainingLeaves(),
+		            lb.getCarryForwarded()
+		    )).toList();
+		}
+	}
+
+	
+	
+	
+
+

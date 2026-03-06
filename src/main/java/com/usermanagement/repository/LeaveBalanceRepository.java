@@ -16,4 +16,6 @@ public interface LeaveBalanceRepository extends JpaRepository<LeaveBalance, Long
 
 	@Query("SELECT lb FROM LeaveBalance lb WHERE lb.employee.id = :employeeId")
 	List<LeaveBalance> findByEmployeeId(@Param("employeeId") Long employeeId);
+	
+	 List<LeaveBalance> findByEmployeeIdAndYear(Long employeeId, int year);
 }

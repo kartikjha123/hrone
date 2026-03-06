@@ -1,13 +1,25 @@
 package com.usermanagement.serviceImpl;
 
-import com.usermanagement.entity.*;
-import com.usermanagement.repository.*;
-import com.usermanagement.service.PayrollService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.usermanagement.entity.AdvanceSalary;
+import com.usermanagement.entity.Attendance;
+import com.usermanagement.entity.Employee;
+import com.usermanagement.entity.Payroll;
+import com.usermanagement.entity.SalaryStructure;
+import com.usermanagement.repository.AdvanceSalaryRepository;
+import com.usermanagement.repository.AttendanceRepository;
+import com.usermanagement.repository.EmployeeRepository;
+import com.usermanagement.repository.PayrollRepository;
+import com.usermanagement.repository.ProductionEntryRepository;
+import com.usermanagement.repository.SalaryStructureRepository;
+import com.usermanagement.responseDto.PayrollResponseDto;
+import com.usermanagement.service.PayrollService;
 
 @Service
 public class PayrollServiceImpl implements PayrollService {
@@ -92,8 +104,34 @@ public class PayrollServiceImpl implements PayrollService {
     }
 
     @Override
-    public List<Payroll> getMonthlyPayrollReport(int month, int year) {
-        return payrollRepository.findByMonthAndYear(month, year);
+    public List<PayrollResponseDto> getMonthlyPayrollReport(int month, int year) {
+    	 List<Payroll> payrollList = payrollRepository.findByMonthAndYear(month, year);
+
+    	    return payrollList.stream()
+    	            .map(this::mapToDto)
+    	            .toList();
+    	}
+    
+    
+    
+    private PayrollResponseDto mapToDto(Payroll payroll) {
+
+        PayrollResponseDto dto = new PayrollResponseDto();
+
+        dto.setId(payroll.getId());
+        dto.setEmployeeId(payroll.getEmployee().getId());
+        dto.setEmployeeName(payroll.getEmployee().getFirstName()+" "+payroll.getEmployee().getLastName());
+        dto.setMonth(payroll.getMonth());
+        dto.setYear(payroll.getYear());
+        dto.setProductionEarnings(payroll.getProductionEarnings());
+        dto.setBaseSalary(payroll.getBaseSalary());
+        dto.setOtEarnings(payroll.getOtEarnings());
+        dto.setAdvanceDeduction(payroll.getAdvanceDeduction());
+        dto.setNetSalary(payroll.getNetSalary());
+        dto.setProcessedDate(payroll.getProcessedDate());
+        dto.setStatus(payroll.getStatus());
+
+        return dto;
     }
 
     @Override
