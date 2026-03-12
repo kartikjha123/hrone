@@ -35,14 +35,14 @@ public class AttendanceController {
 	private AttendanceService attendanceService;
 
 	@Operation(summary = "Mark Attendance Punch In", description = "Punch in or manual attendance entry for an employee.")
-	@PostMapping("/attendance/punch-in")
+	@PostMapping("//punch-in")
 	public ResponseEntity<?> punchIn(@RequestParam Long employeeId) {
 		attendanceService.punchIn(employeeId);
 		return ResponseEntity.ok("Punch In Successful");
 	}
 
 	@Operation(summary = "Mark Attendance Punch Out", description = "Punch Out or manual attendance entry for an employee.")
-	@PostMapping("/attendance/punch-in")
+	@PostMapping("/punch-out")
 	public ResponseEntity<?> punchOut(@RequestParam Long employeeId) {
 		attendanceService.punchOut(employeeId);
 		return ResponseEntity.ok("Punch In Successful");
