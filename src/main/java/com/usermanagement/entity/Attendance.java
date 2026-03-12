@@ -1,6 +1,8 @@
 package com.usermanagement.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,64 +25,108 @@ public class Attendance {
     private Employee employee;
 
     private LocalDate date;
-    private String status;
+
+    private String status; // PP, AA, H, HD
+
     private Double overtimeHours;
-    private String punchIn;
-    private String punchOut;
 
-    public Long getId() {
-        return id;
-    }
+    private LocalTime punchIn;
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    private LocalTime punchOut;
 
-    public Employee getEmployee() {
-        return employee;
-    }
+    // NEW FIELDS
+    private String approvalStatus; // PENDING, APPROVED, REJECTED
 
-    public void setEmployee(Employee employee) {
-        this.employee = employee;
-    }
+    private Long approvedBy; // manager id
 
-    public LocalDate getDate() {
-        return date;
-    }
+    private LocalDateTime approvedDate;
 
-    public void setDate(LocalDate date) {
-        this.date = date;
-    }
+	public Long getId() {
+		return id;
+	}
 
-    public String getStatus() {
-        return status;
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
+	public Employee getEmployee() {
+		return employee;
+	}
 
-    public Double getOvertimeHours() {
-        return overtimeHours;
-    }
+	public void setEmployee(Employee employee) {
+		this.employee = employee;
+	}
 
-    public void setOvertimeHours(Double overtimeHours) {
-        this.overtimeHours = overtimeHours;
-    }
+	public LocalDate getDate() {
+		return date;
+	}
 
-    public String getPunchIn() {
-        return punchIn;
-    }
+	public void setDate(LocalDate date) {
+		this.date = date;
+	}
 
-    public void setPunchIn(String punchIn) {
-        this.punchIn = punchIn;
-    }
+	public String getStatus() {
+		return status;
+	}
 
-    public String getPunchOut() {
-        return punchOut;
-    }
+	public void setStatus(String status) {
+		this.status = status;
+	}
 
-    public void setPunchOut(String punchOut) {
-        this.punchOut = punchOut;
-    }
+	public Double getOvertimeHours() {
+		return overtimeHours;
+	}
+
+	public void setOvertimeHours(Double overtimeHours) {
+		this.overtimeHours = overtimeHours;
+	}
+
+	
+
+	public String getApprovalStatus() {
+		return approvalStatus;
+	}
+
+	public void setApprovalStatus(String approvalStatus) {
+		this.approvalStatus = approvalStatus;
+	}
+
+	public Long getApprovedBy() {
+		return approvedBy;
+	}
+
+	public void setApprovedBy(Long approvedBy) {
+		this.approvedBy = approvedBy;
+	}
+
+	public LocalDateTime getApprovedDate() {
+		return approvedDate;
+	}
+
+	public void setApprovedDate(LocalDateTime approvedDate) {
+		this.approvedDate = approvedDate;
+	}
+
+	public LocalTime getPunchIn() {
+		return punchIn;
+	}
+
+	public void setPunchIn(LocalTime punchIn) {
+		this.punchIn = punchIn;
+	}
+
+	public LocalTime getPunchOut() {
+		return punchOut;
+	}
+
+	public void setPunchOut(LocalTime punchOut) {
+		this.punchOut = punchOut;
+	}
+	
+	
+
+    // getters setters
+    
+    
+    
 }

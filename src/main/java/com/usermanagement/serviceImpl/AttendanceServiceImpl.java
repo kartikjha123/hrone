@@ -1,17 +1,20 @@
 package com.usermanagement.serviceImpl;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.usermanagement.entity.Attendance;
 import com.usermanagement.entity.Employee;
 import com.usermanagement.repository.AttendanceRepository;
 import com.usermanagement.repository.EmployeeRepository;
 import com.usermanagement.requestDto.AttendanceRequestDto;
 import com.usermanagement.service.AttendanceService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import java.time.LocalDate;
-import java.time.YearMonth;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class AttendanceServiceImpl implements AttendanceService {
@@ -22,42 +25,9 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    @Override
-    public void markAttendance(AttendanceRequestDto request) {
-        Employee emp = employeeRepository.findById(request.getEmployeeId())
-                .orElseThrow(() -> new RuntimeException("Employee not found"));
+  
 
-        Attendance attendance = new Attendance();
-        attendance.setEmployee(emp);
-        attendance.setDate(request.getDate() != null ? request.getDate() : LocalDate.now());
-        attendance.setStatus(request.getStatus());
-        attendance.setOvertimeHours(request.getOvertimeHours());
-        attendance.setPunchIn(request.getPunchIn());
-        attendance.setPunchOut(request.getPunchOut());
-        attendanceRepository.save(attendance);
-    }
-
-    @Override
-    public void bulkMarkHoliday(LocalDate date, String department) {
-        List<Employee> employees;
-        if (department != null && !department.isEmpty()) {
-            employees = employeeRepository.findAll().stream()
-                    .filter(e -> department.equals(e.getDepartment()))
-                    .collect(Collectors.toList());
-        } else {
-            employees = employeeRepository.findAll();
-        }
-
-        List<Attendance> holidays = employees.stream().map(emp -> {
-            Attendance attendance = new Attendance();
-            attendance.setEmployee(emp);
-            attendance.setDate(date);
-            attendance.setStatus("H"); // Holiday
-            return attendance;
-        }).collect(Collectors.toList());
-
-        attendanceRepository.saveAll(holidays);
-    }
+   
 
     @Override
     public List<Attendance> getMonthlyAttendance(Long employeeId, int month, int year) {
@@ -67,13 +37,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         return attendanceRepository.findByEmployeeIdAndDateBetween(employeeId, startDate, endDate);
     }
 
-    @Override
-    public Double calculateMonthlyOT(Long employeeId, int month, int year) {
-        List<Attendance> monthlyRecords = getMonthlyAttendance(employeeId, month, year);
-        return monthlyRecords.stream()
-                .mapToDouble(a -> a.getOvertimeHours() != null ? a.getOvertimeHours() : 0.0)
-                .sum();
-    }
+  
 
     @Override
     public void updateAttendance(Long id, AttendanceRequestDto request) {
@@ -81,7 +45,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .orElseThrow(() -> new RuntimeException("Attendance record not found with id: " + id));
         attendance.setDate(request.getDate());
         attendance.setStatus(request.getStatus());
-        attendance.setOvertimeHours(request.getOvertimeHours());
+      //  attendance.setOvertimeHours(request.getOvertimeHours());
         attendance.setPunchIn(request.getPunchIn());
         attendance.setPunchOut(request.getPunchOut());
         attendanceRepository.save(attendance);
@@ -94,4 +58,56 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
         attendanceRepository.deleteById(id);
     }
-}
+
+	
+
+	@Override
+	public void punchIn(Long employeeId) {
+
+		Employee emp = employeeRepository.findById(employeeId)
+				.orElseThrow(() -> new RuntimeException("Employee not found"));
+
+		Attendance attendance = new Attendance();
+		attendance.setEmployee(emp);
+		attendance.setDate(LocalDate.now());
+		attendance.setPunchIn(LocalTime.now());
+		attendance.setStatus("PP");
+		attendance.setApprovalStatus("PENDING");
+
+		attendanceRepository.save(attendance);
+	}
+
+	@Override
+	public void punchOut(Long employeeId) {
+		 Attendance attendance = attendanceRepository
+		            .findByEmployeeIdAndDate(employeeId, LocalDate.now());
+
+		    attendance.setPunchOut(LocalTime.now());
+
+		    attendanceRepository.save(attendance);
+		
+	}
+
+	@Override
+	public List<Attendance> getManagerEmployeeAttendance(Long managerId) {
+		List<Employee> employees = employeeRepository.findByManagerId(managerId);
+
+	    return attendanceRepository.findByEmployeeIn(employees);
+	}
+
+	@Override
+	public void approveAttendance(Long attendanceId, Long managerId) {
+		// TODO Auto-generated method stub
+		
+		Attendance attendance = attendanceRepository.findById(attendanceId)
+	            .orElseThrow(() -> new RuntimeException("Attendance not found"));
+
+	    attendance.setApprovalStatus("APPROVED");
+	    attendance.setApprovedBy(managerId);
+
+	    attendanceRepository.save(attendance);
+		
+	}
+		
+	}
+

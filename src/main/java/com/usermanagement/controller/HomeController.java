@@ -2,6 +2,7 @@ package com.usermanagement.controller;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -23,7 +24,7 @@ public class HomeController {
 //	    return ResponseEntity.ok("Hello from backend");
 //	}
 	
-	@PostMapping("/backend-running")
+	@GetMapping("/backend-running")
 	public ResponseEntity<?> backendRunning()
 	{
 		return new ResponseEntity("Backend Running",HttpStatus.OK);

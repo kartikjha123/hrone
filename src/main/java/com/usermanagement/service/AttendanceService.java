@@ -6,12 +6,17 @@ import java.time.LocalDate;
 import java.util.List;
 
 public interface AttendanceService {
-    void markAttendance(AttendanceRequestDto request);
-    void bulkMarkHoliday(LocalDate date, String department);
+    
     List<Attendance> getMonthlyAttendance(Long employeeId, int month, int year);
-    Double calculateMonthlyOT(Long employeeId, int month, int year);
-
+   
     void updateAttendance(Long id, AttendanceRequestDto request);
 
     void deleteAttendance(Long id);
+    
+    public void punchIn(Long employeeId);
+    public void punchOut(Long employeeId);
+    
+    public List<Attendance> getManagerEmployeeAttendance(Long managerId);
+    
+    public void approveAttendance(Long attendanceId, Long managerId);
 }
