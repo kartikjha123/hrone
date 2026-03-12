@@ -35,7 +35,7 @@ public class AttendanceController {
 	private AttendanceService attendanceService;
 
 	@Operation(summary = "Mark Attendance Punch In", description = "Punch in or manual attendance entry for an employee.")
-	@PostMapping("//punch-in")
+	@PostMapping("/punch-in")
 	public ResponseEntity<?> punchIn(@RequestParam Long employeeId) {
 		attendanceService.punchIn(employeeId);
 		return ResponseEntity.ok("Punch In Successful");
