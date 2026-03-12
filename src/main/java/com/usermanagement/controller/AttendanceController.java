@@ -62,6 +62,10 @@ public class AttendanceController {
 		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Attendance deleted successfully"));
 	}
 
+	 @Operation(
+		        summary = "Manager View Employee Attendance",
+		        description = "Fetch attendance records of employees reporting to a specific manager."
+		    )
 	@GetMapping("/manager/attendance")
 	public ResponseEntity<?> getManagerEmployeeAttendance(@RequestParam Long managerId) {
 
@@ -70,6 +74,10 @@ public class AttendanceController {
 
 	}
 
+	 @Operation(
+		        summary = "Approve Attendance",
+		        description = "Manager approves the attendance entry of an employee."
+		    )
 	@GetMapping("/attendance/approve/{id}")
 	public ResponseEntity<?> approveAttendance(@PathVariable Long id, @RequestParam Long managerId) {
 
@@ -77,4 +85,22 @@ public class AttendanceController {
 
 		return ResponseEntity.ok("Attendance Approved");
 	}
+	
+	 @Operation(
+		        summary = "Get Today's Attendance Status",
+		        description = "Returns today's attendance status of an employee including punch-in and punch-out time."
+		    )
+	@GetMapping("/status/{employeeId}")
+	public ResponseEntity<?> getTodayAttendanceStatus(
+	        @PathVariable Long employeeId){
+
+	    return ResponseEntity.ok(
+	            attendanceService.getTodayAttendanceStatus(employeeId)
+	    );
+	}
+	
+//	@GetMapping("/dashboard/{employeeId}")
+//	public ResponseEntity<?> getDashboard(@PathVariable Long employeeId) {
+//	    return ResponseEntity.ok(attendanceService.getAttendanceDashboard(employeeId));
+//	}
 }

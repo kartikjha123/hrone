@@ -14,6 +14,7 @@ import com.usermanagement.entity.Employee;
 import com.usermanagement.repository.AttendanceRepository;
 import com.usermanagement.repository.EmployeeRepository;
 import com.usermanagement.requestDto.AttendanceRequestDto;
+import com.usermanagement.responseDto.AttendanceStatusDto;
 import com.usermanagement.service.AttendanceService;
 
 @Service
@@ -108,6 +109,43 @@ public class AttendanceServiceImpl implements AttendanceService {
 	    attendanceRepository.save(attendance);
 		
 	}
+
+
+
+	@Override
+	public AttendanceStatusDto getTodayAttendanceStatus(Long employeeId) {
+
+	    Attendance attendance =
+	            attendanceRepository.findByEmployeeIdAndDate(
+	                    employeeId,
+	                    LocalDate.now()
+	            );
+
+	    AttendanceStatusDto dto = new AttendanceStatusDto();
+
+	    if (attendance == null) {
+	        dto.setPunchedIn(false);
+	        dto.setPunchedOut(false);
+	        dto.setStatus("NOT_PUNCHED_IN");
+	        return dto;
+	    }
+
+	    dto.setPunchedIn(attendance.getPunchIn() != null);
+	    dto.setPunchedOut(attendance.getPunchOut() != null);
+
+	    if (attendance.getPunchIn() != null) {
+	        dto.setPunchInTime(attendance.getPunchIn().toString());
+	    }
+
+	    if (attendance.getPunchOut() != null) {
+	        dto.setPunchOutTime(attendance.getPunchOut().toString());
+	    }
+
+	    dto.setStatus(attendance.getStatus());
+
+	    return dto;
+	}
+	
 		
 	}
 
