@@ -1,5 +1,6 @@
 package com.usermanagement.repository;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -23,5 +24,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	    Optional<User> findByUsernameWithRolesAndPrivileges(@Param("username") String username);
 	
 	Optional<User> findByUsername(String email);
+	
+	@Query("SELECT u FROM User u JOIN u.roles r WHERE r.name = 'MANAGER'")
+	List<User> findAllManagers();
 
 }

@@ -11,6 +11,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,6 +43,7 @@ import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
 import com.usermanagement.responseDto.EmployeeManagerMappingResponseDto;
 import com.usermanagement.responseDto.EmployeeResponseDto;
+import com.usermanagement.responseDto.ManagerDashboardResponseDto;
 import com.usermanagement.responseDto.PrivilegeDTO;
 import com.usermanagement.responseDto.RoleDto;
 import com.usermanagement.responseDto.UserResponseDto;
@@ -471,5 +475,76 @@ public class UserServiceImpl implements UserService {
 		}
 		privilegeRepository.deleteById(id);
 	}
+
+	@Override
+	public Page<EmployeeResponseDto> getEmployeesUnderManager(int page, int size) {
+
+	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+	    String username = auth.getName();
+
+	    User user = userRepository.findByUsername(username)
+	            .orElseThrow(() -> new RuntimeException("User not found"));
+
+	    Employee manager = user.getEmployee();
+
+	    Pageable pageable = PageRequest.of(page, size);
+
+	    Page<Employee> employees =
+	            employeeRepository.findByManagerId(manager.getId(), pageable);
+
+	    return employees.map(this::mapToEmployeeResponseDto);
+	}
+
+	@Override
+	public List<UserResponseDto> getAllManagers() {
+
+	    List<User> managers = userRepository.findAllManagers();
+
+	    return managers.stream()
+	            .map(this::mapToUserResponseDto)
+	            .collect(Collectors.toList());
+	}
+	@Override
+	public List<EmployeeResponseDto> getUnassignedEmployees() {
+
+	    List<Employee> employees = employeeRepository.findByManagerIsNull();
+
+	    return employees.stream()
+	            .map(this::mapToEmployeeResponseDto)
+	            .collect(Collectors.toList());
+	}
+
+	@Override
+	public ManagerDashboardResponseDto getManagerDashboard(int page,int size){
+
+	    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+	    String username = auth.getName();
+
+	    User user = userRepository.findByUsername(username)
+	            .orElseThrow(() -> new RuntimeException("User not found"));
+
+	    Employee manager = user.getEmployee();
+
+	    Pageable pageable = PageRequest.of(page,size);
+
+	    Page<Employee> employeePage =
+	            employeeRepository.findByManagerId(manager.getId(),pageable);
+
+	    List<EmployeeResponseDto> employees =
+	            employeePage.stream()
+	            .map(this::mapToEmployeeResponseDto)
+	            .collect(Collectors.toList());
+
+	    ManagerDashboardResponseDto dto = new ManagerDashboardResponseDto();
+
+	    dto.setManagerId(manager.getId());
+	    dto.setManagerName(manager.getFirstName()+" "+manager.getLastName());
+	    dto.setEmployees(employees);
+	    dto.setTotalEmployees(employeeRepository.countByManagerId(manager.getId()));
+
+	    return dto;
+	}
+	
 
 }

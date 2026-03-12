@@ -2,6 +2,8 @@ package com.usermanagement.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 import com.usermanagement.entity.Privilege;
 import com.usermanagement.entity.Role;
 import com.usermanagement.requestDto.AssignEmployeeToManagerRequestDto;
@@ -9,13 +11,12 @@ import com.usermanagement.requestDto.AssignPrivilegesRequest;
 import com.usermanagement.requestDto.AssignRolesRequest;
 import com.usermanagement.requestDto.ItemMasterRequestDto;
 import com.usermanagement.requestDto.PrivilegeRequestDto;
-import com.usermanagement.requestDto.ProductionEntryRequestDto;
-import com.usermanagement.requestDto.ProductionFilterRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
 import com.usermanagement.responseDto.EmployeeManagerMappingResponseDto;
+import com.usermanagement.responseDto.EmployeeResponseDto;
+import com.usermanagement.responseDto.ManagerDashboardResponseDto;
 import com.usermanagement.responseDto.PrivilegeDTO;
-import com.usermanagement.responseDto.ProductionEntryResponseDto;
 import com.usermanagement.responseDto.RoleDto;
 import com.usermanagement.responseDto.UserResponseDto;
 
@@ -58,4 +59,12 @@ public interface UserService {
 	public Privilege updatePrivilege(Long id, PrivilegeRequestDto privilegeRequestDto);
 
 	public void deletePrivilege(Long id);
+	
+	Page<EmployeeResponseDto> getEmployeesUnderManager(int page, int size);
+
+	List<UserResponseDto> getAllManagers();
+
+	List<EmployeeResponseDto> getUnassignedEmployees();
+	
+	ManagerDashboardResponseDto getManagerDashboard(int page,int size);
 }

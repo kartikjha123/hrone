@@ -3,14 +3,17 @@ package com.usermanagement.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.usermanagement.requestDto.AssignEmployeeToManagerRequestDto;
@@ -20,6 +23,8 @@ import com.usermanagement.requestDto.PrivilegeRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
 import com.usermanagement.responseDto.EmployeeManagerMappingResponseDto;
+import com.usermanagement.responseDto.EmployeeResponseDto;
+import com.usermanagement.responseDto.ManagerDashboardResponseDto;
 import com.usermanagement.responseDto.PrivilegeDTO;
 import com.usermanagement.responseDto.ResponseMessageDto;
 import com.usermanagement.responseDto.RoleDto;
@@ -186,6 +191,76 @@ public class UserController {
 	public ResponseEntity<ResponseMessageDto> deletePrivilege(@PathVariable Long id) {
 		userService.deletePrivilege(id);
 		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Privilege Deleted Successfully"));
+	}
+	
+	@Operation(
+	        summary = "Get Employees Under Manager",
+	        description = "Fetch paginated list of employees assigned to the logged-in manager"
+	)
+	@GetMapping("/manager/employees")
+	public ResponseEntity<ResponseMessageDto> getEmployeesUnderManager(
+	        @RequestParam int page,
+	        @RequestParam int size){
+
+	    Page<EmployeeResponseDto> employees =
+	            userService.getEmployeesUnderManager(page, size);
+
+	    return ResponseEntity.ok(
+	            new ResponseMessageDto(
+	                    HttpStatus.OK.value(),
+	                    "Employees under manager",
+	                    employees));
+	}
+	
+	@Operation(
+	        summary = "Get All Managers",
+	        description = "Fetch list of all managers available in the system"
+	)
+	@GetMapping("/managers")
+	public ResponseEntity<ResponseMessageDto> getManagers(){
+
+	    List<UserResponseDto> list = userService.getAllManagers();
+
+	    return ResponseEntity.ok(
+	            new ResponseMessageDto(
+	                    HttpStatus.OK.value(),
+	                    "Manager list",
+	                    list));
+	}
+	@Operation(
+	        summary = "Get Unassigned Employees",
+	        description = "Fetch list of employees who are not assigned to any manager"
+	)
+	@GetMapping("/employees/unassigned")
+	public ResponseEntity<ResponseMessageDto> getUnassignedEmployees(){
+
+	    List<EmployeeResponseDto> list =
+	            userService.getUnassignedEmployees();
+
+	    return ResponseEntity.ok(
+	            new ResponseMessageDto(
+	                    HttpStatus.OK.value(),
+	                    "Unassigned employees",
+	                    list));
+	}
+	
+	@Operation(
+	        summary = "Manager Dashboard",
+	        description = "Fetch dashboard details for logged-in manager including total employees and paginated employee list"
+	)
+	@GetMapping("/manager/dashboard")
+	public ResponseEntity<ResponseMessageDto> getManagerDashboard(
+	        @RequestParam int page,
+	        @RequestParam int size){
+
+	    ManagerDashboardResponseDto dashboard =
+	            userService.getManagerDashboard(page,size);
+
+	    return ResponseEntity.ok(
+	            new ResponseMessageDto(
+	                    HttpStatus.OK.value(),
+	                    "Manager dashboard fetched",
+	                    dashboard));
 	}
 	
 
