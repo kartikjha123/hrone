@@ -1,24 +1,9 @@
 package com.usermanagement.controller;
 
-import java.time.LocalDate;
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.usermanagement.entity.Attendance;
-import com.usermanagement.entity.Employee;
 import com.usermanagement.requestDto.AttendanceRequestDto;
 import com.usermanagement.responseDto.ResponseMessageDto;
 import com.usermanagement.service.AttendanceService;
@@ -31,76 +16,80 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 @RequestMapping("/attendance")
 public class AttendanceController {
 
-	@Autowired
-	private AttendanceService attendanceService;
+    private final AttendanceService attendanceService;
 
-	@Operation(summary = "Mark Attendance Punch In", description = "Punch in or manual attendance entry for an employee.")
-	@PostMapping("/punch-in")
-	public ResponseEntity<?> punchIn(@RequestParam Long employeeId) {
-		attendanceService.punchIn(employeeId);
-		return ResponseEntity.ok("Punch In Successful");
-	}
+    // ✅ Constructor Injection
+    public AttendanceController(AttendanceService attendanceService) {
+        this.attendanceService = attendanceService;
+    }
 
-	@Operation(summary = "Mark Attendance Punch Out", description = "Punch Out or manual attendance entry for an employee.")
-	@PostMapping("/punch-out")
-	public ResponseEntity<?> punchOut(@RequestParam Long employeeId) {
-		attendanceService.punchOut(employeeId);
-		return ResponseEntity.ok("Punch In Successful");
-	}
+    @Operation(summary = "Mark Attendance Punch In", description = "Punch in for an employee.")
+    @PostMapping("/punch-in")
+    public ResponseEntity<?> punchIn(@RequestParam Long employeeId) {
+        attendanceService.punchIn(employeeId);
+        return ResponseEntity.ok("Punch In Successful");
+    }
 
-	@Operation(summary = "Update Attendance", description = "Updates an existing attendance record")
-	@PutMapping("/update/{id}")
-	public ResponseEntity<?> updateAttendance(@PathVariable Long id, @RequestBody AttendanceRequestDto request) {
-		attendanceService.updateAttendance(id, request);
-		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Attendance updated successfully"));
-	}
+    @Operation(summary = "Mark Attendance Punch Out", description = "Punch out for an employee.")
+    @PostMapping("/punch-out")
+    public ResponseEntity<?> punchOut(@RequestParam Long employeeId) {
+        attendanceService.punchOut(employeeId);
+        return ResponseEntity.ok("Punch Out Successful"); // ✅ Fixed message
+    }
 
-	@Operation(summary = "Delete Attendance", description = "Deletes an attendance record")
-	@DeleteMapping("/delete/{id}")
-	public ResponseEntity<?> deleteAttendance(@PathVariable Long id) {
-		attendanceService.deleteAttendance(id);
-		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Attendance deleted successfully"));
-	}
+    @Operation(summary = "Update Attendance", description = "Updates an existing attendance record.")
+    @PutMapping("/update/{id}")
+    public ResponseEntity<?> updateAttendance(@PathVariable Long id,
+                                               @RequestBody AttendanceRequestDto request) {
+        attendanceService.updateAttendance(id, request);
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Attendance updated successfully"));
+    }
 
-	 @Operation(
-		        summary = "Manager View Employee Attendance",
-		        description = "Fetch attendance records of employees reporting to a specific manager."
-		    )
-	@GetMapping("/manager/attendance")
-	public ResponseEntity<?> getManagerEmployeeAttendance(@RequestParam Long managerId) {
+    @Operation(summary = "Delete Attendance", description = "Deletes an attendance record.")
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<?> deleteAttendance(@PathVariable Long id) {
+        attendanceService.deleteAttendance(id);
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Attendance deleted successfully"));
+    }
 
-		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Attendance deleted successfully",
-				attendanceService.getManagerEmployeeAttendance(managerId)));
+    @Operation(summary = "Manager View Employee Attendance", description = "Fetch attendance of employees under a manager.")
+    @GetMapping("/manager/attendance")
+    public ResponseEntity<?> getManagerEmployeeAttendance(@RequestParam Long managerId) {
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(),
+                "Attendance fetched successfully",
+                attendanceService.getManagerEmployeeAttendance(managerId)));
+    }
 
-	}
+    @Operation(summary = "Approve Attendance", description = "Manager approves attendance of an employee.")
+    @GetMapping("/approve/{id}") // ✅ Fixed duplicate /attendance/attendance URL
+    public ResponseEntity<?> approveAttendance(@PathVariable Long id,
+                                                @RequestParam Long managerId) {
+        attendanceService.approveAttendance(id, managerId);
+        return ResponseEntity.ok("Attendance Approved");
+    }
 
-	 @Operation(
-		        summary = "Approve Attendance",
-		        description = "Manager approves the attendance entry of an employee."
-		    )
-	@GetMapping("/attendance/approve/{id}")
-	public ResponseEntity<?> approveAttendance(@PathVariable Long id, @RequestParam Long managerId) {
+    @Operation(summary = "Get Today's Attendance Status", description = "Returns today's punch-in/out status of an employee.")
+    @GetMapping("/status/{employeeId}")
+    public ResponseEntity<?> getTodayAttendanceStatus(@PathVariable Long employeeId) {
+        return ResponseEntity.ok(attendanceService.getTodayAttendanceStatus(employeeId));
+    }
+    
+    @Operation(
+    	    summary = "Get My Attendance",
+    	    description = "Login ke baad employee apni current month ki attendance dekh sakta hai."
+    	)
+    	@GetMapping("/my-attendance/{employeeId}")
+    	public ResponseEntity<?> getMyAttendance(
+    	        @PathVariable Long employeeId,
+    	        @RequestParam(required = false) Integer month,
+    	        @RequestParam(required = false) Integer year) {
 
-		attendanceService.approveAttendance(id, managerId);
-
-		return ResponseEntity.ok("Attendance Approved");
-	}
-	
-	 @Operation(
-		        summary = "Get Today's Attendance Status",
-		        description = "Returns today's attendance status of an employee including punch-in and punch-out time."
-		    )
-	@GetMapping("/status/{employeeId}")
-	public ResponseEntity<?> getTodayAttendanceStatus(
-	        @PathVariable Long employeeId){
-
-	    return ResponseEntity.ok(
-	            attendanceService.getTodayAttendanceStatus(employeeId)
-	    );
-	}
-	
-//	@GetMapping("/dashboard/{employeeId}")
-//	public ResponseEntity<?> getDashboard(@PathVariable Long employeeId) {
-//	    return ResponseEntity.ok(attendanceService.getAttendanceDashboard(employeeId));
-//	}
+    	    return ResponseEntity.ok(
+    	        new ResponseMessageDto(
+    	            HttpStatus.OK.value(),
+    	            "Attendance fetched successfully",
+    	            attendanceService.getMyAttendance(employeeId, month, year)
+    	        )
+    	    );
+    	}
 }

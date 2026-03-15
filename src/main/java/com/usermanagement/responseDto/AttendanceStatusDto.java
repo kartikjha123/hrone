@@ -1,5 +1,7 @@
 package com.usermanagement.responseDto;
 
+import java.time.LocalDate;
+
 public class AttendanceStatusDto {
 
     private boolean punchedIn;
@@ -8,50 +10,30 @@ public class AttendanceStatusDto {
     private String punchInTime;
     private String punchOutTime;
 
+    // ✅ New fields added
+    private String totalHours;
+    private LocalDate date;
+
     private String status;
 
-	public boolean isPunchedIn() {
-		return punchedIn;
-	}
+    public boolean isPunchedIn() { return punchedIn; }
+    public void setPunchedIn(boolean punchedIn) { this.punchedIn = punchedIn; }
 
-	public void setPunchedIn(boolean punchedIn) {
-		this.punchedIn = punchedIn;
-	}
+    public boolean isPunchedOut() { return punchedOut; }
+    public void setPunchedOut(boolean punchedOut) { this.punchedOut = punchedOut; }
 
-	public boolean isPunchedOut() {
-		return punchedOut;
-	}
+    public String getPunchInTime() { return punchInTime; }
+    public void setPunchInTime(String punchInTime) { this.punchInTime = punchInTime; }
 
-	public void setPunchedOut(boolean punchedOut) {
-		this.punchedOut = punchedOut;
-	}
+    public String getPunchOutTime() { return punchOutTime; }
+    public void setPunchOutTime(String punchOutTime) { this.punchOutTime = punchOutTime; }
 
-	public String getPunchInTime() {
-		return punchInTime;
-	}
+    public String getTotalHours() { return totalHours; }
+    public void setTotalHours(String totalHours) { this.totalHours = totalHours; }
 
-	public void setPunchInTime(String punchInTime) {
-		this.punchInTime = punchInTime;
-	}
+    public LocalDate getDate() { return date; }
+    public void setDate(LocalDate date) { this.date = date; }
 
-	public String getPunchOutTime() {
-		return punchOutTime;
-	}
-
-	public void setPunchOutTime(String punchOutTime) {
-		this.punchOutTime = punchOutTime;
-	}
-
-	public String getStatus() {
-		return status;
-	}
-
-	public void setStatus(String status) {
-		this.status = status;
-	}
-    
-    
-    
-
-    // getters setters
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

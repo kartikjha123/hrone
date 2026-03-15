@@ -1,12 +1,14 @@
 package com.usermanagement.service;
 
-import com.usermanagement.entity.Employee;
-import com.usermanagement.entity.Notification;
 import java.util.List;
+
+import com.usermanagement.entity.Employee;
+import com.usermanagement.responseDto.NotificationResponseDto;
 
 public interface NotificationService {
     void sendNotification(Employee recipient, String title, String message, String type);
-    List<Notification> getMyNotifications(Long employeeId);
+    List<NotificationResponseDto> getMyNotifications(Long employeeId); // ✅ DTO return
+
     void markAsRead(Long notificationId);
 
     void deleteNotification(Long id);

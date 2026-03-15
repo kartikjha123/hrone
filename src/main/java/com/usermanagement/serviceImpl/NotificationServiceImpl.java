@@ -1,13 +1,17 @@
 package com.usermanagement.serviceImpl;
 
-import com.usermanagement.entity.Employee;
-import com.usermanagement.entity.Notification;
-import com.usermanagement.repository.NotificationRepository;
-import com.usermanagement.service.NotificationService;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import java.util.List;
+
+import com.usermanagement.entity.Employee;
+import com.usermanagement.entity.Notification;
+import com.usermanagement.repository.NotificationRepository;
+import com.usermanagement.responseDto.NotificationResponseDto;
+import com.usermanagement.service.NotificationService;
 
 @Service
 public class NotificationServiceImpl implements NotificationService {
@@ -36,8 +40,39 @@ public class NotificationServiceImpl implements NotificationService {
     }
 
     @Override
-    public List<Notification> getMyNotifications(Long employeeId) {
-        return notificationRepository.findByRecipient_IdOrderByCreatedAtDesc(employeeId);
+    public List<NotificationResponseDto> getMyNotifications(Long employeeId) {
+
+        List<Notification> notifications = notificationRepository
+            .findByRecipient_IdOrderByCreatedAtDesc(employeeId);
+
+        return notifications.stream().map(n -> {
+
+            NotificationResponseDto dto = new NotificationResponseDto();
+            dto.setId(n.getId());
+            dto.setTitle(n.getTitle());
+            dto.setMessage(n.getMessage());
+            dto.setType(n.getType());
+            dto.setRead(n.isRead());
+            dto.setCreatedAt(n.getCreatedAt());
+
+            // ✅ Employee se sirf basic info lo - no infinite loop!
+            if (n.getRecipient() != null) {
+                dto.setRecipientId(n.getRecipient().getId());
+                dto.setRecipientName(
+                    n.getRecipient().getFirstName() + " " +
+                    n.getRecipient().getLastName()
+                );
+                // Email User se lo
+                if (n.getRecipient().getUser() != null) {
+                    dto.setRecipientEmail(
+                        n.getRecipient().getUser().getEmail()
+                    );
+                }
+            }
+
+            return dto;
+
+        }).collect(Collectors.toList());
     }
 
     @Override
