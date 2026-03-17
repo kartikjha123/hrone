@@ -5,6 +5,7 @@ import java.util.List;
 import com.usermanagement.entity.Attendance;
 import com.usermanagement.requestDto.AttendanceRequestDto;
 import com.usermanagement.responseDto.AttendanceStatusDto;
+import com.usermanagement.responseDto.ManagerAttendanceResponseDto;
 import com.usermanagement.responseDto.MyAttendanceDto;
 
 public interface AttendanceService {
@@ -19,11 +20,13 @@ public interface AttendanceService {
 
 	public void punchOut(Long employeeId);
 
-	public List<Attendance> getManagerEmployeeAttendance(Long managerId);
+	//public List<Attendance> getManagerEmployeeAttendance(Long managerId);
 
 	public void approveAttendance(Long attendanceId, Long managerId);
 
 	public AttendanceStatusDto getTodayAttendanceStatus(Long employeeId);
 	
 	MyAttendanceDto getMyAttendance(Long employeeId, Integer month, Integer year);
+	
+	List<ManagerAttendanceResponseDto> getManagerEmployeeAttendance(Long managerId);
 }

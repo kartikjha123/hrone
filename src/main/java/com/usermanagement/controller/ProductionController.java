@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import com.usermanagement.requestDto.ProductionEntryRequestDto;
 import com.usermanagement.requestDto.ProductionFilterRequestDto;
 import com.usermanagement.requestDto.BulkProductionRequestDto;
+import com.usermanagement.requestDto.ManagerProductionFilterDto;
 import com.usermanagement.responseDto.ProductionEntryResponseDto;
 import com.usermanagement.responseDto.ResponseMessageDto;
 import com.usermanagement.service.ProductionService;
@@ -78,4 +79,18 @@ public class ProductionController {
 		productionService.deleteProductionEntry(id);
 		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Production Entry Deleted Successfully"));
 	}
+	
+	@Operation(summary = "Get Manager's Team Production Entries",
+	           description = "Manager apne saare employees ki production entries dekh sakta hai with filters")
+	@PostMapping("/manager/entries")
+	public ResponseEntity<?> getManagerEntries( @RequestBody ManagerProductionFilterDto dto) {
+
+	    Page<ProductionEntryResponseDto> page = productionService.getEntriesByManager(dto);
+
+	    String message = page.isEmpty() ? "No entries found" : "Entries fetched successfully";
+
+	    return ResponseEntity.ok( new ResponseMessageDto(200, message, page));
+	}
+
+	
 }

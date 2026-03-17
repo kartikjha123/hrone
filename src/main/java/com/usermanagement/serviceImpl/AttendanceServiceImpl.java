@@ -16,6 +16,7 @@ import com.usermanagement.repository.EmployeeRepository;
 import com.usermanagement.requestDto.AttendanceRequestDto;
 import com.usermanagement.responseDto.AttendanceDayDto;
 import com.usermanagement.responseDto.AttendanceStatusDto;
+import com.usermanagement.responseDto.ManagerAttendanceResponseDto;
 import com.usermanagement.responseDto.MyAttendanceDto;
 import com.usermanagement.service.AttendanceService;
 
@@ -101,9 +102,48 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public List<Attendance> getManagerEmployeeAttendance(Long managerId) {
+    public List<ManagerAttendanceResponseDto> getManagerEmployeeAttendance(Long managerId) {
+
         List<Employee> employees = employeeRepository.findByManagerId(managerId);
-        return attendanceRepository.findByEmployeeIn(employees);
+
+        if (employees.isEmpty()) return List.of();
+
+        return attendanceRepository.findByEmployeeIn(employees)
+                .stream()
+                .map(a -> {
+                    ManagerAttendanceResponseDto dto = new ManagerAttendanceResponseDto();
+
+                    dto.setAttendanceId(a.getId());
+                    dto.setEmployeeId(a.getEmployee().getId());
+                    dto.setEmployeeCode(a.getEmployee().getEmployeeCode());
+                    dto.setEmployeeName(a.getEmployee().getFirstName()
+                            + " " + a.getEmployee().getLastName());
+                    dto.setDepartment(a.getEmployee().getDepartment());
+                    dto.setDesignation(a.getEmployee().getDesignation());
+
+                    dto.setDate(a.getDate() != null
+                            ? a.getDate().toString() : null);
+                    dto.setStatus(a.getStatus());
+                    dto.setApprovalStatus(a.getApprovalStatus());
+
+                    dto.setPunchIn(a.getPunchIn() != null
+                            ? a.getPunchIn().toString() : null);
+                    dto.setPunchOut(a.getPunchOut() != null
+                            ? a.getPunchOut().toString() : null);
+
+                    // Total hours calculate karo
+                    if (a.getPunchIn() != null && a.getPunchOut() != null) {
+                        long minutes = java.time.Duration
+                                .between(a.getPunchIn(), a.getPunchOut())
+                                .toMinutes();
+                        dto.setTotalHours((minutes / 60) + "h " + (minutes % 60) + "m");
+                    } else {
+                        dto.setTotalHours(null);
+                    }
+
+                    return dto;
+                })
+                .toList();
     }
 
     @Override

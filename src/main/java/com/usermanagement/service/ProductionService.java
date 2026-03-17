@@ -1,9 +1,8 @@
 package com.usermanagement.service;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 
+import com.usermanagement.requestDto.ManagerProductionFilterDto;
 import com.usermanagement.requestDto.ProductionEntryRequestDto;
 import com.usermanagement.requestDto.ProductionFilterRequestDto;
 import com.usermanagement.responseDto.ProductionEntryResponseDto;
@@ -18,5 +17,8 @@ public void addProductionEntry(ProductionEntryRequestDto productionEntryRequestD
 	public void updateProductionEntry(Long id, ProductionEntryRequestDto productionEntryRequestDto);
 
 	public void deleteProductionEntry(Long id);
+	
+	Page<ProductionEntryResponseDto> getEntriesByManager(ManagerProductionFilterDto dto);
+	//void approveRejectEntry(ApproveRejectDto dto);
 
 }

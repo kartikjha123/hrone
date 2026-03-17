@@ -2,13 +2,14 @@ package com.usermanagement.serviceImpl;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.usermanagement.entity.Employee;
 import com.usermanagement.entity.ItemMaster;
@@ -16,14 +17,13 @@ import com.usermanagement.entity.ProductionEntry;
 import com.usermanagement.repository.EmployeeRepository;
 import com.usermanagement.repository.ItemMasterRepository;
 import com.usermanagement.repository.ProductionEntryRepository;
+import com.usermanagement.requestDto.BulkProductionRequestDto;
+import com.usermanagement.requestDto.ManagerProductionFilterDto;
 import com.usermanagement.requestDto.ProductionEntryRequestDto;
 import com.usermanagement.requestDto.ProductionFilterRequestDto;
 import com.usermanagement.responseDto.ProductionEntryResponseDto;
-import com.usermanagement.service.ProductionService;
-
 import com.usermanagement.service.NotificationService;
-import com.usermanagement.requestDto.BulkProductionRequestDto;
-import java.util.stream.Collectors;
+import com.usermanagement.service.ProductionService;
 
 @Service
 public class ProductionServiceImpl implements ProductionService {
@@ -161,4 +161,58 @@ public class ProductionServiceImpl implements ProductionService {
 		dto.setEmployeeName(entry.getEmployee().getFirstName() + " " + entry.getEmployee().getLastName());
 		return dto;
 	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public Page<ProductionEntryResponseDto> getEntriesByManager(ManagerProductionFilterDto dto) {
+
+	    Pageable pageable = PageRequest.of(
+	            dto.getPage() == null ? 0 : dto.getPage(),
+	            dto.getSize() == null ? 10 : dto.getSize()
+	    );
+
+	    // status null ho toh sab aaye
+	    String status = (dto.getStatus() != null && !dto.getStatus().isBlank())
+	            ? dto.getStatus() : null;
+
+	    return productionEntryRepository
+	            .findByManagerId(dto.getManagerId(), status,
+	                             dto.getFromDate(), dto.getToDate(), pageable)
+	            .map(this::mapToResponseDto);
+	}
+
+//	@Override
+//	@Transactional
+//	public void approveRejectEntry(ApproveRejectDto dto) {
+//
+//	    ProductionEntry entry = productionEntryRepository.findById(dto.getEntryId())
+//	            .orElseThrow(() -> new RuntimeException(
+//	                    "Production entry not found with id: " + dto.getEntryId()));
+//
+//	    // Sirf PENDING entries hi approve/reject ho sakti hain
+//	    if (!"PENDING".equals(entry.getStatus())) {
+//	        throw new RuntimeException(
+//	                "Only PENDING entries can be approved or rejected. Current status: "
+//	                + entry.getStatus());
+//	    }
+//
+//	    // Status validate karo
+//	    if (!List.of("APPROVED", "REJECTED").contains(dto.getStatus())) {
+//	        throw new RuntimeException("Status must be APPROVED or REJECTED");
+//	    }
+//
+//	    entry.setStatus(dto.getStatus());
+//	    entry.setSupervisorComments(dto.getComments());
+//	    productionEntryRepository.save(entry);
+//
+//	    // Employee ko notification bhejo
+//	    notificationService.sendNotification(
+//	            entry.getEmployee(),
+//	            "Task " + dto.getStatus(),
+//	            "Your production entry for " + entry.getWorkDate()
+//	                    + " has been " + dto.getStatus()
+//	                    + (dto.getComments() != null ? ". Comments: " + dto.getComments() : ""),
+//	            "PROD_STATUS_UPDATE"
+//	    );
+//	}
 }
