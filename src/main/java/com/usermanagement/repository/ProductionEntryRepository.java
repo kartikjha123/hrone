@@ -1,6 +1,7 @@
 package com.usermanagement.repository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -87,6 +88,87 @@ public interface ProductionEntryRepository  extends JpaRepository<ProductionEntr
 	        AND p.status = 'APPROVED'
 	        """)
 	Double getTotalApprovedAmount(@Param("employeeId") Long employeeId);
+	
+	
+	
+	// Dashboard summary ke liye
+	@Query("""
+	        SELECT COUNT(p) FROM ProductionEntry p
+	        WHERE p.employee.id = :employeeId
+	        AND (:status IS NULL OR p.status = :status)
+	        AND MONTH(p.workDate) = :month
+	        AND YEAR(p.workDate) = :year
+	        """)
+	Long countByEmployeeStatusMonthYear(
+	        @Param("employeeId") Long employeeId,
+	        @Param("status") String status,
+	        @Param("month") int month,
+	        @Param("year") int year);
+
+	@Query("""
+	        SELECT COALESCE(SUM(p.amount), 0)
+	        FROM ProductionEntry p
+	        WHERE p.employee.id = :employeeId
+	        AND p.status = :status
+	        AND MONTH(p.workDate) = :month
+	        AND YEAR(p.workDate) = :year
+	        """)
+	Double sumAmountByStatusMonthYear(
+	        @Param("employeeId") Long employeeId,
+	        @Param("status") String status,
+	        @Param("month") int month,
+	        @Param("year") int year);
+
+	// Monthly report ke liye
+	@Query("""
+	        SELECT p FROM ProductionEntry p
+	        WHERE p.employee.id = :employeeId
+	        AND MONTH(p.workDate) = :month
+	        AND YEAR(p.workDate) = :year
+	        ORDER BY p.workDate ASC
+	        """)
+	List<ProductionEntry> findMonthlyEntries(
+	        @Param("employeeId") Long employeeId,
+	        @Param("month") int month,
+	        @Param("year") int year);
+
+	// Item-wise summary
+	@Query("""
+	        SELECT p.item.itemName,
+	               SUM(p.quantity),
+	               SUM(p.amount)
+	        FROM ProductionEntry p
+	        WHERE p.employee.id = :employeeId
+	        AND p.workDate BETWEEN :fromDate AND :toDate
+	        GROUP BY p.item.id, p.item.itemName
+	        ORDER BY SUM(p.amount) DESC
+	        """)
+	List<Object[]> findItemWiseSummary(
+	        @Param("employeeId") Long employeeId,
+	        @Param("fromDate") LocalDate fromDate,
+	        @Param("toDate") LocalDate toDate);
+
+	// Manager employee-wise summary
+	@Query("""
+	        SELECT p.employee.id,
+	               p.employee.firstName,
+	               p.employee.lastName,
+	               p.employee.employeeCode,
+	               COUNT(p),
+	               COALESCE(SUM(CASE WHEN p.status = 'APPROVED' THEN p.amount ELSE 0 END), 0),
+	               COALESCE(SUM(CASE WHEN p.status = 'PENDING' THEN p.amount ELSE 0 END), 0)
+	        FROM ProductionEntry p
+	        WHERE p.employee.manager.id = :managerId
+	        AND MONTH(p.workDate) = :month
+	        AND YEAR(p.workDate) = :year
+	        GROUP BY p.employee.id, p.employee.firstName,
+	                 p.employee.lastName, p.employee.employeeCode
+	        ORDER BY SUM(p.amount) DESC
+	        """)
+	List<Object[]> findManagerEmployeeSummary(
+	        @Param("managerId") Long managerId,
+	        @Param("month") int month,
+	        @Param("year") int year);
 	
 	
 

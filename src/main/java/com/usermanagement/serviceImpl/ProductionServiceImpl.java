@@ -22,7 +22,11 @@ import com.usermanagement.requestDto.ManagerProductionFilterDto;
 import com.usermanagement.requestDto.MyProductionFilterDto;
 import com.usermanagement.requestDto.ProductionEntryRequestDto;
 import com.usermanagement.requestDto.ProductionFilterRequestDto;
+import com.usermanagement.responseDto.EmployeeSummaryDto;
+import com.usermanagement.responseDto.ItemWiseSummaryDto;
+import com.usermanagement.responseDto.MonthlyProductionReportDto;
 import com.usermanagement.responseDto.MyProductionResponseDto;
+import com.usermanagement.responseDto.ProductionDashboardDto;
 import com.usermanagement.responseDto.ProductionEntryResponseDto;
 import com.usermanagement.service.NotificationService;
 import com.usermanagement.service.ProductionService;
@@ -229,6 +233,143 @@ public class ProductionServiceImpl implements ProductionService {
 	            totalAmount,
 	            entries
 	    );
+	}
+
+	// ── Dashboard Summary ────────────────────────────────────────────────
+	@Override
+	@Transactional(readOnly = true)
+	public ProductionDashboardDto getDashboardSummary(Long employeeId,
+	        Integer month, Integer year) {
+
+	    Employee emp = employeeRepository.findById(employeeId)
+	            .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+	    LocalDate now = LocalDate.now();
+	    int m = month != null ? month : now.getMonthValue();
+	    int y = year  != null ? year  : now.getYear();
+
+	    Long total    = productionEntryRepository
+	            .countByEmployeeStatusMonthYear(employeeId, null, m, y);
+	    Long pending  = productionEntryRepository
+	            .countByEmployeeStatusMonthYear(employeeId, "PENDING", m, y);
+	    Long approved = productionEntryRepository
+	            .countByEmployeeStatusMonthYear(employeeId, "APPROVED", m, y);
+	    Long rejected = productionEntryRepository
+	            .countByEmployeeStatusMonthYear(employeeId, "REJECTED", m, y);
+
+	    Double approvedAmount = productionEntryRepository
+	            .sumAmountByStatusMonthYear(employeeId, "APPROVED", m, y);
+	    Double pendingAmount  = productionEntryRepository
+	            .sumAmountByStatusMonthYear(employeeId, "PENDING", m, y);
+
+	    return new ProductionDashboardDto(
+	            emp.getFirstName() + " " + emp.getLastName(),
+	            emp.getEmployeeCode(),
+	            total, pending, approved, rejected,
+	            approvedAmount, pendingAmount,
+	            java.time.Month.of(m).name(), y
+	    );
+	}
+
+	// ── Monthly Report ───────────────────────────────────────────────────
+	@Override
+	@Transactional(readOnly = true)
+	public MonthlyProductionReportDto getMonthlyReport(Long employeeId,
+	        Integer month, Integer year) {
+
+	    Employee emp = employeeRepository.findById(employeeId)
+	            .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+	    LocalDate now = LocalDate.now();
+	    int m = month != null ? month : now.getMonthValue();
+	    int y = year  != null ? year  : now.getYear();
+
+	    List<ProductionEntry> entries = productionEntryRepository
+	            .findMonthlyEntries(employeeId, m, y);
+
+	    List<ProductionEntryResponseDto> entryDtos = entries.stream()
+	            .map(this::mapToResponseDto)
+	            .toList();
+
+	    double totalAmount    = entries.stream()
+	            .mapToDouble(ProductionEntry::getAmount).sum();
+	    double approvedAmount = entries.stream()
+	            .filter(e -> "APPROVED".equals(e.getStatus()))
+	            .mapToDouble(ProductionEntry::getAmount).sum();
+	    double pendingAmount  = entries.stream()
+	            .filter(e -> "PENDING".equals(e.getStatus()))
+	            .mapToDouble(ProductionEntry::getAmount).sum();
+	    double rejectedAmount = entries.stream()
+	            .filter(e -> "REJECTED".equals(e.getStatus()))
+	            .mapToDouble(ProductionEntry::getAmount).sum();
+	    int totalQty = entries.stream()
+	            .mapToInt(ProductionEntry::getQuantity).sum();
+
+	    return new MonthlyProductionReportDto(
+	            emp.getFirstName() + " " + emp.getLastName(),
+	            java.time.Month.of(m).name() + " " + y,
+	            (long) entries.size(),
+	            totalQty,
+	            totalAmount, approvedAmount,
+	            pendingAmount, rejectedAmount,
+	            entryDtos
+	    );
+	}
+
+	// ── Item-wise Summary ────────────────────────────────────────────────
+	@Override
+	@Transactional(readOnly = true)
+	public List<ItemWiseSummaryDto> getItemWiseSummary(Long employeeId,
+	        LocalDate fromDate, LocalDate toDate) {
+
+	    LocalDate from = fromDate != null ? fromDate
+	            : LocalDate.now().withDayOfMonth(1);
+	    LocalDate to   = toDate   != null ? toDate
+	            : LocalDate.now();
+
+	    return productionEntryRepository
+	            .findItemWiseSummary(employeeId, from, to)
+	            .stream()
+	            .map(row -> new ItemWiseSummaryDto(
+	                    (String) row[0],
+	                    ((Number) row[1]).longValue(),
+	                    ((Number) row[2]).doubleValue()
+	            ))
+	            .toList();
+	}
+
+	// ── Manager Employee Summary ─────────────────────────────────────────
+	@Override
+	@Transactional(readOnly = true)
+	public List<EmployeeSummaryDto> getManagerEmployeeSummary(Long managerId,
+	        Integer month, Integer year) {
+
+	    LocalDate now = LocalDate.now();
+	    int m = month != null ? month : now.getMonthValue();
+	    int y = year  != null ? year  : now.getYear();
+
+	    return productionEntryRepository
+	            .findManagerEmployeeSummary(managerId, m, y)
+	            .stream()
+	            .map(row -> new EmployeeSummaryDto(
+	                    ((Number) row[0]).longValue(),
+	                    (String) row[1] + " " + (String) row[2],
+	                    (String) row[3],
+	                    ((Number) row[4]).longValue(),
+	                    ((Number) row[5]).doubleValue(),
+	                    ((Number) row[6]).doubleValue()
+	            ))
+	            .toList();
+	}
+
+	// ── Get Single Entry ─────────────────────────────────────────────────
+	@Override
+	@Transactional(readOnly = true)
+	public ProductionEntryResponseDto getEntryById(Long id) {
+	    ProductionEntry entry = productionEntryRepository.findById(id)
+	            .orElseThrow(() -> new RuntimeException(
+	                    "Production entry not found with id: " + id));
+	    return mapToResponseDto(entry);
 	}
 
 //	@Override

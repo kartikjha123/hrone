@@ -1,10 +1,13 @@
 package com.usermanagement.controller;
 
+import java.time.LocalDate;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -110,6 +113,68 @@ public class ProductionController {
 
 	    return ResponseEntity.ok(
 	            new ResponseMessageDto(200, "My entries fetched successfully", result));
+	}
+	
+	
+	@Operation(summary = "Dashboard Summary",
+	           description = "Employee ka monthly production summary")
+	@GetMapping("/dashboard-summary")
+	public ResponseEntity<?> getDashboardSummary(
+	        @RequestParam Long employeeId,
+	        @RequestParam(required = false) Integer month,
+	        @RequestParam(required = false) Integer year) {
+
+	    return ResponseEntity.ok(new ResponseMessageDto(200,
+	            "Dashboard summary fetched",
+	            productionService.getDashboardSummary(employeeId, month, year)));
+	}
+
+	@Operation(summary = "Monthly Payment Report",
+	           description = "Employee ka monthly production aur payment report")
+	@GetMapping("/monthly-report")
+	public ResponseEntity<?> getMonthlyReport(
+	        @RequestParam Long employeeId,
+	        @RequestParam(required = false) Integer month,
+	        @RequestParam(required = false) Integer year) {
+
+	    return ResponseEntity.ok(new ResponseMessageDto(200,
+	            "Monthly report fetched",
+	            productionService.getMonthlyReport(employeeId, month, year)));
+	}
+
+	@Operation(summary = "Item-wise Summary",
+	           description = "Konse item pe kitna kaam kiya")
+	@GetMapping("/item-summary")
+	public ResponseEntity<?> getItemSummary(
+	        @RequestParam Long employeeId,
+	        @RequestParam(required = false) LocalDate fromDate,
+	        @RequestParam(required = false) LocalDate toDate) {
+
+	    return ResponseEntity.ok(new ResponseMessageDto(200,
+	            "Item summary fetched",
+	            productionService.getItemWiseSummary(employeeId, fromDate, toDate)));
+	}
+
+	@Operation(summary = "Manager — Employee-wise Summary",
+	           description = "Manager ke saare employees ka monthly summary")
+	@GetMapping("/manager/employee-summary")
+	public ResponseEntity<?> getManagerEmployeeSummary(
+	        @RequestParam Long managerId,
+	        @RequestParam(required = false) Integer month,
+	        @RequestParam(required = false) Integer year) {
+
+	    return ResponseEntity.ok(new ResponseMessageDto(200,
+	            "Employee summary fetched",
+	            productionService.getManagerEmployeeSummary(managerId, month, year)));
+	}
+
+	@Operation(summary = "Get Entry Detail",
+	           description = "Single production entry ka detail")
+	@GetMapping("/detail/{id}")
+	public ResponseEntity<?> getEntryDetail(@PathVariable Long id) {
+	    return ResponseEntity.ok(new ResponseMessageDto(200,
+	            "Entry fetched",
+	            productionService.getEntryById(id)));
 	}
 
 	
