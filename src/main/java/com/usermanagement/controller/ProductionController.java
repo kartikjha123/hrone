@@ -1,17 +1,24 @@
 package com.usermanagement.controller;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.usermanagement.requestDto.ProductionEntryRequestDto;
-import com.usermanagement.requestDto.ProductionFilterRequestDto;
 import com.usermanagement.requestDto.BulkProductionRequestDto;
 import com.usermanagement.requestDto.ManagerProductionFilterDto;
+import com.usermanagement.requestDto.MyProductionFilterDto;
+import com.usermanagement.requestDto.ProductionEntryRequestDto;
+import com.usermanagement.requestDto.ProductionFilterRequestDto;
+import com.usermanagement.responseDto.MyProductionResponseDto;
 import com.usermanagement.responseDto.ProductionEntryResponseDto;
 import com.usermanagement.responseDto.ResponseMessageDto;
 import com.usermanagement.service.ProductionService;
@@ -90,6 +97,19 @@ public class ProductionController {
 	    String message = page.isEmpty() ? "No entries found" : "Entries fetched successfully";
 
 	    return ResponseEntity.ok( new ResponseMessageDto(200, message, page));
+	}
+	
+	
+	@Operation(summary = "My Production Entries",
+	           description = "Employee apni saari production entries dekh sakta hai with summary")
+	@PostMapping("/my-entries")
+	public ResponseEntity<?> getMyEntries(@RequestBody MyProductionFilterDto dto) {
+
+	    MyProductionResponseDto result =
+	            productionService.getMyProductionEntries(dto);
+
+	    return ResponseEntity.ok(
+	            new ResponseMessageDto(200, "My entries fetched successfully", result));
 	}
 
 	

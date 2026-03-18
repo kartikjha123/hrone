@@ -19,8 +19,10 @@ import com.usermanagement.repository.ItemMasterRepository;
 import com.usermanagement.repository.ProductionEntryRepository;
 import com.usermanagement.requestDto.BulkProductionRequestDto;
 import com.usermanagement.requestDto.ManagerProductionFilterDto;
+import com.usermanagement.requestDto.MyProductionFilterDto;
 import com.usermanagement.requestDto.ProductionEntryRequestDto;
 import com.usermanagement.requestDto.ProductionFilterRequestDto;
+import com.usermanagement.responseDto.MyProductionResponseDto;
 import com.usermanagement.responseDto.ProductionEntryResponseDto;
 import com.usermanagement.service.NotificationService;
 import com.usermanagement.service.ProductionService;
@@ -179,6 +181,54 @@ public class ProductionServiceImpl implements ProductionService {
 	            .findByManagerId(dto.getManagerId(), status,
 	                             dto.getFromDate(), dto.getToDate(), pageable)
 	            .map(this::mapToResponseDto);
+	}
+
+	@Override
+	@Transactional(readOnly = true)
+	public MyProductionResponseDto getMyProductionEntries(MyProductionFilterDto dto) {
+
+	    // Employee find karo
+	    Employee emp = employeeRepository.findById(dto.getEmployeeId())
+	            .orElseThrow(() -> new RuntimeException(
+	                    "Employee not found with id: " + dto.getEmployeeId()));
+
+	    Pageable pageable = PageRequest.of(
+	            dto.getPage() == null ? 0 : dto.getPage(),
+	            dto.getSize() == null ? 10 : dto.getSize()
+	    );
+
+	    String status = (dto.getStatus() != null && !dto.getStatus().isBlank())
+	            ? dto.getStatus() : null;
+
+	    // Entries fetch karo
+	    Page<ProductionEntryResponseDto> entries = productionEntryRepository
+	            .findMyEntries(
+	                    dto.getEmployeeId(), status,
+	                    dto.getFromDate(), dto.getToDate(), pageable)
+	            .map(this::mapToResponseDto);
+
+	    // Summary counts
+	    Long totalEntries  = productionEntryRepository
+	            .countByEmployeeAndStatus(dto.getEmployeeId(), null);
+	    Long pendingCount  = productionEntryRepository
+	            .countByEmployeeAndStatus(dto.getEmployeeId(), "PENDING");
+	    Long approvedCount = productionEntryRepository
+	            .countByEmployeeAndStatus(dto.getEmployeeId(), "APPROVED");
+	    Long rejectedCount = productionEntryRepository
+	            .countByEmployeeAndStatus(dto.getEmployeeId(), "REJECTED");
+	    Double totalAmount = productionEntryRepository
+	            .getTotalApprovedAmount(dto.getEmployeeId());
+
+	    return new MyProductionResponseDto(
+	            emp.getFirstName() + " " + emp.getLastName(),
+	            emp.getEmployeeCode(),
+	            totalEntries,
+	            pendingCount,
+	            approvedCount,
+	            rejectedCount,
+	            totalAmount,
+	            entries
+	    );
 	}
 
 //	@Override

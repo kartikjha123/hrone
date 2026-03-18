@@ -48,5 +48,46 @@ public interface ProductionEntryRepository  extends JpaRepository<ProductionEntr
 	        Pageable pageable);
 	
 	
+	
+	
+	
+	
+	
+	// Entries with filter
+	@Query("""
+	        SELECT p FROM ProductionEntry p
+	        WHERE p.employee.id = :employeeId
+	        AND (:status IS NULL OR p.status = :status)
+	        AND (:fromDate IS NULL OR p.workDate >= :fromDate)
+	        AND (:toDate IS NULL OR p.workDate <= :toDate)
+	        ORDER BY p.workDate DESC
+	        """)
+	Page<ProductionEntry> findMyEntries(
+	        @Param("employeeId") Long employeeId,
+	        @Param("status") String status,
+	        @Param("fromDate") LocalDate fromDate,
+	        @Param("toDate") LocalDate toDate,
+	        Pageable pageable);
+
+	// Summary counts
+	@Query("""
+	        SELECT COUNT(p) FROM ProductionEntry p
+	        WHERE p.employee.id = :employeeId
+	        AND (:status IS NULL OR p.status = :status)
+	        """)
+	Long countByEmployeeAndStatus(
+	        @Param("employeeId") Long employeeId,
+	        @Param("status") String status);
+
+	// Total amount
+	@Query("""
+	        SELECT COALESCE(SUM(p.amount), 0)
+	        FROM ProductionEntry p
+	        WHERE p.employee.id = :employeeId
+	        AND p.status = 'APPROVED'
+	        """)
+	Double getTotalApprovedAmount(@Param("employeeId") Long employeeId);
+	
+	
 
 }

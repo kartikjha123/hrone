@@ -3,8 +3,10 @@ package com.usermanagement.service;
 import org.springframework.data.domain.Page;
 
 import com.usermanagement.requestDto.ManagerProductionFilterDto;
+import com.usermanagement.requestDto.MyProductionFilterDto;
 import com.usermanagement.requestDto.ProductionEntryRequestDto;
 import com.usermanagement.requestDto.ProductionFilterRequestDto;
+import com.usermanagement.responseDto.MyProductionResponseDto;
 import com.usermanagement.responseDto.ProductionEntryResponseDto;
 
 public interface ProductionService {
@@ -20,5 +22,9 @@ public void addProductionEntry(ProductionEntryRequestDto productionEntryRequestD
 	
 	Page<ProductionEntryResponseDto> getEntriesByManager(ManagerProductionFilterDto dto);
 	//void approveRejectEntry(ApproveRejectDto dto);
+	
+	
+	public MyProductionResponseDto getMyProductionEntries(MyProductionFilterDto dto);
+
 
 }
