@@ -1,5 +1,6 @@
 package com.usermanagement.serviceImpl;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
@@ -103,5 +104,30 @@ public class LeaveApplicationServiceImpl implements LeaveApplicationService {
 			throw new RuntimeException("Only pending leave applications can be cancelled");
 		}
 		leaveApplicationRepository.delete(leaveApplication);
+	}
+	
+	
+	// Existing methods same rahenge — yeh add karo
+
+	@Override
+	public List<LeaveApplicationResponseDto> getLeavesByStatus(Long employeeId, String status) {
+	    return leaveApplicationRepository
+	            .findByEmployeeIdAndStatus(employeeId, status)
+	            .stream()
+	            .map(this::mapToDto)
+	            .toList();
+	}
+
+	@Override
+	public List<LeaveApplicationResponseDto> getLeavesByDateRange(Long employeeId,
+	                                                               LocalDate from, LocalDate to) {
+	    if (from.isAfter(to)) {
+	        throw new RuntimeException("From date to date se pehle honi chahiye");
+	    }
+	    return leaveApplicationRepository
+	            .findByEmployeeIdAndDateRange(employeeId, from, to)
+	            .stream()
+	            .map(this::mapToDto)
+	            .toList();
 	}
 }
