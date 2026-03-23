@@ -2,22 +2,26 @@ package com.usermanagement.serviceImpl;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.usermanagement.entity.Attendance;
 import com.usermanagement.entity.Employee;
 import com.usermanagement.repository.AttendanceRepository;
 import com.usermanagement.repository.EmployeeRepository;
 import com.usermanagement.requestDto.AttendanceRequestDto;
+import com.usermanagement.requestDto.BulkApproveRequestDto;
 import com.usermanagement.responseDto.AttendanceDayDto;
 import com.usermanagement.responseDto.AttendanceStatusDto;
 import com.usermanagement.responseDto.ManagerAttendanceResponseDto;
 import com.usermanagement.responseDto.MyAttendanceDto;
+import com.usermanagement.responseDto.OvertimeResponseDto;
 import com.usermanagement.service.AttendanceService;
 
 @Service
@@ -67,20 +71,40 @@ public class AttendanceServiceImpl implements AttendanceService {
         if (attendance.getPunchOut() != null) {
             throw new RuntimeException("Already punched out for today.");
         }
+        
+        LocalTime punchOut = LocalTime.now();
+        attendance.setPunchOut(punchOut);
+        
+     // ✅ Total hours
+        double totalHours = Duration.between(attendance.getPunchIn(), punchOut)
+                                    .toMinutes() / 60.0;
+        attendance.setTotalHours(Math.round(totalHours * 100.0) / 100.0);
 
-        attendance.setPunchOut(LocalTime.now());
+        // ✅ Overtime hours (8 se zyada = overtime)
+        double overtimeHours = totalHours > 8.0 ? totalHours - 8.0 : 0.0;
+        attendance.setOvertimeHours(Math.round(overtimeHours * 100.0) / 100.0);
+
         attendanceRepository.save(attendance);
     }
 
     @Override
     public void updateAttendance(Long id, AttendanceRequestDto request) {
         Attendance attendance = attendanceRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Attendance record not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Not found"));
 
         attendance.setDate(request.getDate());
         attendance.setStatus(request.getStatus());
         attendance.setPunchIn(request.getPunchIn());
         attendance.setPunchOut(request.getPunchOut());
+
+        // ✅ Yeh add karo — update pe bhi recalculate ho
+        if (request.getPunchIn() != null && request.getPunchOut() != null) {
+            double totalHours = Duration.between(request.getPunchIn(), request.getPunchOut())
+                                        .toMinutes() / 60.0;
+            attendance.setTotalHours(Math.round(totalHours * 100.0) / 100.0);
+            double ot = totalHours > 8.0 ? totalHours - 8.0 : 0.0;
+            attendance.setOvertimeHours(Math.round(ot * 100.0) / 100.0);
+        }
 
         attendanceRepository.save(attendance);
     }
@@ -254,4 +278,74 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         return dto;
     }
+
+	@Override
+	public List<OvertimeResponseDto> getMyOvertime(Long employeeId, Integer month, Integer year) {
+		 LocalDate now = LocalDate.now();
+		    int m = month != null ? month : now.getMonthValue();
+		    int y = year != null ? year : now.getYear();
+
+		    return attendanceRepository
+		        .findOvertimeByEmployeeAndMonth(employeeId, m, y)
+		        .stream()
+		        .map(this::mapToOvertimeDto)
+		        .collect(Collectors.toList());
+	}
+
+	@Override
+	public List<OvertimeResponseDto> getManagerOvertimeView(Long managerId) {
+		 return attendanceRepository
+			        .findOvertimeByManager(managerId)
+			        .stream()
+			        .map(this::mapToOvertimeDto)
+			        .collect(Collectors.toList());
+	}
+	
+	
+	private OvertimeResponseDto mapToOvertimeDto(Attendance a) {
+	    OvertimeResponseDto dto = new OvertimeResponseDto();
+	    dto.setAttendanceId(a.getId());
+	    dto.setEmployeeId(a.getEmployee().getId());
+	    dto.setEmployeeName(a.getEmployee().getFirstName() + " " + a.getEmployee().getLastName());
+	    dto.setEmployeeCode(a.getEmployee().getEmployeeCode());
+	    dto.setDepartment(a.getEmployee().getDepartment());
+	    dto.setDate(a.getDate() != null ? a.getDate().toString() : null);
+	    dto.setPunchIn(a.getPunchIn() != null ? a.getPunchIn().toString() : null);
+	    dto.setPunchOut(a.getPunchOut() != null ? a.getPunchOut().toString() : null);
+	    dto.setOvertimeHours(a.getOvertimeHours());
+	    dto.setApprovalStatus(a.getApprovalStatus());
+
+	    // "9h 30m" format
+	    if (a.getTotalHours() != null) {
+	        long h = (long) Math.floor(a.getTotalHours());
+	        long m = Math.round((a.getTotalHours() - h) * 60);
+	        dto.setTotalHours(h + "h " + m + "m");
+	    }
+	    return dto;
+	}
+
+	// ─────────────────────────────────────────────
+	// AttendanceServiceImpl mein implement karo
+	@Override
+	@Transactional
+	public void bulkApproveAttendance(BulkApproveRequestDto request) {
+
+	    if (request.getAttendanceIds() == null || request.getAttendanceIds().isEmpty()) {
+	        throw new RuntimeException("No attendance IDs provided");
+	    }
+
+	    List<Attendance> records = attendanceRepository.findAllById(request.getAttendanceIds());
+
+	    if (records.isEmpty()) {
+	        throw new RuntimeException("No attendance records found");
+	    }
+
+	    records.forEach(a -> {
+	        a.setApprovalStatus("APPROVED");
+	        a.setApprovedBy(request.getManagerId());
+	        a.setApprovedDate(LocalDateTime.now());
+	    });
+
+	    attendanceRepository.saveAll(records); // ✅ ek saath save
+	}
 }

@@ -36,6 +36,7 @@ import com.usermanagement.repository.UserRepository;
 import com.usermanagement.requestDto.AssignEmployeeToManagerRequestDto;
 import com.usermanagement.requestDto.AssignPrivilegesRequest;
 import com.usermanagement.requestDto.AssignRolesRequest;
+import com.usermanagement.requestDto.CommonRequestDto;
 import com.usermanagement.requestDto.EmployeeRequestDto;
 import com.usermanagement.requestDto.ItemMasterRequestDto;
 import com.usermanagement.requestDto.PrivilegeRequestDto;
@@ -322,20 +323,18 @@ public class UserServiceImpl implements UserService {
 		dto.setDesignation(e.getDesignation());
 		// assuming joiningDate is LocalDate or String - adapt if different
 		dto.setJoiningDate(e.getJoiningDate());
+		dto.setEmployeeCode(e.getEmployeeCode());
 		return dto;
 	}
 
 	@Override
-	public List<UserResponseDto> getAllUser() {
-		// TODO Auto-generated method stub
-		List<User> users = userRepository.findAll();
-		
-		if (users == null || users.isEmpty()) {
-			return Collections.emptyList();
-		}
+	public Page<UserResponseDto> getAllUser(CommonRequestDto request) {
 
-		return users.stream().map(this::mapToUserResponseDto).collect(Collectors.toList());
+	    Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+	    Page<User> users = userRepository.searchUsers(request.getSearch(), pageable);
 
+	    // Page.map() use karo — seedha Page<UserResponseDto> milega
+	    return users.map(this::mapToUserResponseDto);
 	}
 
 	@Override

@@ -9,6 +9,7 @@ import com.usermanagement.entity.Role;
 import com.usermanagement.requestDto.AssignEmployeeToManagerRequestDto;
 import com.usermanagement.requestDto.AssignPrivilegesRequest;
 import com.usermanagement.requestDto.AssignRolesRequest;
+import com.usermanagement.requestDto.CommonRequestDto;
 import com.usermanagement.requestDto.ItemMasterRequestDto;
 import com.usermanagement.requestDto.PrivilegeRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
@@ -34,7 +35,7 @@ public interface UserService {
 	
 	public Role assignPrivilegesToRole(AssignPrivilegesRequest assignPrivilegesRequest);
 
-	public List<UserResponseDto> getAllUser(); 
+	public Page<UserResponseDto> getAllUser(CommonRequestDto requestDto); 
 	
 	public List<RoleDto> getAllRoleWithPrivilage();
 

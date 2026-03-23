@@ -1,0 +1,21 @@
+package com.usermanagement.requestDto;
+
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+//ARApproveDto.java
+public class ARApproveDto {
+
+ @NotBlank(message = "Status is required")
+ @Pattern(regexp = "APPROVED|REJECTED", message = "Status must be APPROVED or REJECTED")
+ private String status;
+
+ @Size(max = 500)
+ private String remarks;
+
+ public String getStatus() { return status; }
+ public void setStatus(String status) { this.status = status; }
+ public String getRemarks() { return remarks; }
+ public void setRemarks(String remarks) { this.remarks = remarks; }
+}

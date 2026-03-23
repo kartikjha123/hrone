@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.usermanagement.requestDto.AssignEmployeeToManagerRequestDto;
 import com.usermanagement.requestDto.AssignPrivilegesRequest;
 import com.usermanagement.requestDto.AssignRolesRequest;
+import com.usermanagement.requestDto.CommonRequestDto;
 import com.usermanagement.requestDto.PrivilegeRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
@@ -86,13 +87,17 @@ public class UserController {
 	
 	@Operation(summary = "Get All Users", description = "Fetches list of all users")
 	@PostMapping("/all")
-	public ResponseEntity<ResponseMessageDto> getAllUser() {
+	public ResponseEntity<ResponseMessageDto> getAllUser(@RequestBody CommonRequestDto request) {
 
-	    List<UserResponseDto> list = userService.getAllUser();
+	    request.setPage(request.getPage() == null ? 0 : request.getPage());
+	    request.setSize(request.getSize() == null ? 10 : request.getSize());
 
-		String message = list.isEmpty() ? "No Data Found" : "User list extracted successfully";
+	    Page<UserResponseDto> list = userService.getAllUser(request);
 
-		return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), message, list));
+	    // isEmpty() nahi — getTotalElements() use karo
+	    String message = list.getTotalElements() == 0 ? "No Data Found" : "User list extracted successfully";
+
+	    return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), message, list));
 	}
 
 	@Operation(summary = "Get Roles with Privileges", description = "Fetches all roles along with their privileges")

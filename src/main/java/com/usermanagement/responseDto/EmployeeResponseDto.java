@@ -11,11 +11,12 @@ public class EmployeeResponseDto {
 	private String department;
 	private String designation;
 	private LocalDate joiningDate;
+	private String employeeCode;
 	
 	
 	
 	public EmployeeResponseDto(Long id, String firstName, String lastName, String phone, String department,
-			String designation, LocalDate joiningDate) {
+			String designation, LocalDate joiningDate,String employeeCode) {
 		super();
 		this.id = id;
 		this.firstName = firstName;
@@ -24,6 +25,7 @@ public class EmployeeResponseDto {
 		this.department = department;
 		this.designation = designation;
 		this.joiningDate = joiningDate;
+		this.employeeCode=employeeCode;
 	}
 	public EmployeeResponseDto() {
 		super();
@@ -70,6 +72,12 @@ public class EmployeeResponseDto {
 	}
 	public void setJoiningDate(LocalDate joiningDate) {
 		this.joiningDate = joiningDate;
+	}
+	public String getEmployeeCode() {
+		return employeeCode;
+	}
+	public void setEmployeeCode(String employeeCode) {
+		this.employeeCode = employeeCode;
 	}
 	
 	

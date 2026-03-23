@@ -20,4 +20,32 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 	Attendance findByEmployeeIdAndDate(Long employeeId, LocalDate now);
 
 	List<Attendance> findByEmployeeIn(List<Employee> employees);
+	
+	
+	
+    // ✅ Sirf overtime wale records (overtimeHours > 0)
+    @Query("SELECT a FROM Attendance a WHERE a.employee.id = :employeeId AND a.overtimeHours > 0")
+    List<Attendance> findOvertimeByEmployee(@Param("employeeId") Long employeeId);
+
+    // ✅ Manager ke under sab employees ka overtime
+    @Query("SELECT a FROM Attendance a WHERE a.employee.manager.id = :managerId AND a.overtimeHours > 0")
+    List<Attendance> findOvertimeByManager(@Param("managerId") Long managerId);
+
+    // ✅ Month-wise overtime
+    @Query("""
+        SELECT a FROM Attendance a
+        WHERE a.employee.id = :employeeId
+        AND a.overtimeHours > 0
+        AND MONTH(a.date) = :month
+        AND YEAR(a.date) = :year
+        """)
+    List<Attendance> findOvertimeByEmployeeAndMonth(
+        @Param("employeeId") Long employeeId,
+        @Param("month") int month,
+        @Param("year") int year);
 }
+	
+	
+	
+	
+

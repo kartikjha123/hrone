@@ -2,6 +2,7 @@ package com.usermanagement.entity;
 
 import java.time.LocalDate;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -36,7 +37,15 @@ public class Employee {
 	@JoinColumn(name = "manager_id")
 	private Employee manager;
 
-	private Integer remainingAR = 6; // Default 6 AR per month/cycle
+	 // ✅ AR fields
+    @Column(name = "remaining_ar", nullable = false)
+    private Integer remainingAR = 6;
+
+    @Column(name = "ar_reset_month")
+    private Integer arResetMonth;
+
+    @Column(name = "ar_reset_year")
+    private Integer arResetYear;
 
 	// getters/setters
 	public Integer getRemainingAR() {
@@ -124,6 +133,22 @@ public class Employee {
 
 	public void setManager(Employee manager) {
 		this.manager = manager;
+	}
+
+	public Integer getArResetMonth() {
+		return arResetMonth;
+	}
+
+	public void setArResetMonth(Integer arResetMonth) {
+		this.arResetMonth = arResetMonth;
+	}
+
+	public Integer getArResetYear() {
+		return arResetYear;
+	}
+
+	public void setArResetYear(Integer arResetYear) {
+		this.arResetYear = arResetYear;
 	}
 
 	

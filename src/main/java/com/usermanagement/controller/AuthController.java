@@ -74,7 +74,7 @@ public class AuthController {
        Employee em= userEntity.getEmployee();
       
       userDto.setEmployeeResponseDto(new EmployeeResponseDto(em.getId(),em.getFirstName(),em.getLastName(),em.getPhone(),em.getDepartment()
-    		  ,em.getDesignation(),em.getJoiningDate()));
+    		  ,em.getDesignation(),em.getJoiningDate(),em.getEmployeeCode()));
        
 
         LoginResponseDto loginResponse = new LoginResponseDto(token, userDto);

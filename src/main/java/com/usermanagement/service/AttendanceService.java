@@ -4,9 +4,11 @@ import java.util.List;
 
 import com.usermanagement.entity.Attendance;
 import com.usermanagement.requestDto.AttendanceRequestDto;
+import com.usermanagement.requestDto.BulkApproveRequestDto;
 import com.usermanagement.responseDto.AttendanceStatusDto;
 import com.usermanagement.responseDto.ManagerAttendanceResponseDto;
 import com.usermanagement.responseDto.MyAttendanceDto;
+import com.usermanagement.responseDto.OvertimeResponseDto;
 
 public interface AttendanceService {
 
@@ -29,4 +31,12 @@ public interface AttendanceService {
 	MyAttendanceDto getMyAttendance(Long employeeId, Integer month, Integer year);
 	
 	List<ManagerAttendanceResponseDto> getManagerEmployeeAttendance(Long managerId);
+	
+	
+	// AttendanceService.java interface mein add karo
+	List<OvertimeResponseDto> getMyOvertime(Long employeeId, Integer month, Integer year);
+	List<OvertimeResponseDto> getManagerOvertimeView(Long managerId);
+	
+	// AttendanceService interface mein add karo
+	void bulkApproveAttendance(BulkApproveRequestDto request);
 }

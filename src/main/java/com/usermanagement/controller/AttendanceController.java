@@ -1,10 +1,22 @@
 package com.usermanagement.controller;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.usermanagement.requestDto.AttendanceRequestDto;
+import com.usermanagement.requestDto.BulkApproveRequestDto;
+import com.usermanagement.responseDto.OvertimeResponseDto;
 import com.usermanagement.responseDto.ResponseMessageDto;
 import com.usermanagement.service.AttendanceService;
 
@@ -92,4 +104,35 @@ public class AttendanceController {
     	        )
     	    );
     	}
+    
+    @Operation(summary = "My Overtime", description = "Employee apna overtime dekhe month-wise")
+    @GetMapping("/my-overtime/{employeeId}")
+    public ResponseEntity<?> getMyOvertime(
+            @PathVariable Long employeeId,
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year) {
+
+        List<OvertimeResponseDto> result = attendanceService.getMyOvertime(employeeId, month, year);
+        String message = result.isEmpty() ? "No overtime found" : "Overtime fetched successfully";
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), message, result));
+    }
+
+    @Operation(summary = "Manager Overtime View", description = "Manager apne under sab employees ka overtime dekhe")
+    @GetMapping("/manager/overtime")
+    public ResponseEntity<?> getManagerOvertimeView(@RequestParam Long managerId) {
+
+        List<OvertimeResponseDto> result = attendanceService.getManagerOvertimeView(managerId);
+        String message = result.isEmpty() ? "No overtime records" : "Overtime data fetched successfully";
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), message, result));
+    }
+    
+    @Operation(summary = "Bulk Approve Attendance", description = "Manager ek saath multiple attendance approve kare")
+    @PutMapping("/bulk-approve")
+    public ResponseEntity<?> bulkApproveAttendance(@RequestBody BulkApproveRequestDto request) {
+        attendanceService.bulkApproveAttendance(request);
+        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(),
+                "Attendance bulk approved successfully"));
+    }
+    
+    
 }
