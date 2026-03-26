@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.usermanagement.entity.Employee;
 import com.usermanagement.entity.Notification;
 import com.usermanagement.repository.NotificationRepository;
+import com.usermanagement.responseDto.NotificationDTO;
 import com.usermanagement.responseDto.NotificationResponseDto;
 import com.usermanagement.service.NotificationService;
 
@@ -29,13 +30,21 @@ public class NotificationServiceImpl implements NotificationService {
         notif.setTitle(title);
         notif.setMessage(message);
         notif.setType(type);
-        notificationRepository.save(notif);
+        notificationRepository.save(notif);  // save entity as before ✅
 
-        // Real-time WebSocket push to specific user
+        // ✅ Send DTO instead of entity to avoid circular reference
+        NotificationDTO dto = new NotificationDTO(
+            notif.getId(),
+            notif.getTitle(),
+            notif.getMessage(),
+            notif.getType(),
+            recipient.getId()
+        );
+
         messagingTemplate.convertAndSendToUser(
             recipient.getId().toString(),
             "/queue/notifications",
-            notif
+            dto  // ← send dto, not notif
         );
     }
 
