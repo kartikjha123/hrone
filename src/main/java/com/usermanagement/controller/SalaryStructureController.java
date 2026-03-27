@@ -36,8 +36,14 @@ public class SalaryStructureController {
     @Operation(summary = "Get Salary Structure By Employee ID")
     @GetMapping("/{employeeId}")
     public ResponseEntity<?> getByEmployeeId(@PathVariable Long employeeId) {
-        return ResponseEntity.ok(new ResponseMessageDto(HttpStatus.OK.value(), "Salary structure fetched successfully", 
-                salaryStructureService.getByEmployeeId(employeeId)));
+        return ResponseEntity.ok(
+            new ResponseMessageDto(
+                HttpStatus.OK.value(),
+                "Salary structure fetched successfully",
+                salaryStructureService.getByEmployeeId(employeeId)  
+                // ab DTO return hoga ✅
+            )
+        );
     }
 
     @Operation(summary = "Delete Salary Structure")
