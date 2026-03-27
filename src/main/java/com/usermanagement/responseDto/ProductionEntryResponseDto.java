@@ -20,6 +20,16 @@ public class ProductionEntryResponseDto {
     private Integer quantity;
     private Double amount;
     private String status;
+    
+    private Boolean isOvertime;
+
+    public Boolean getIsOvertime() {
+        return isOvertime;
+    }
+    public void setIsOvertime(Boolean isOvertime) {
+        this.isOvertime = isOvertime;
+    }
+    
 	public ProductionEntryResponseDto() {
 		super();
 		// TODO Auto-generated constructor stub

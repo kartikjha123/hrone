@@ -171,5 +171,86 @@ public interface ProductionEntryRepository  extends JpaRepository<ProductionEntr
 	        @Param("year") int year);
 	
 	
+	//
+	
+	
+	// ✅ Salary ke liye — approved overtime amount
+	@Query("""
+	    SELECT COALESCE(SUM(p.amount), 0)
+	    FROM ProductionEntry p
+	    WHERE p.employee.id = :empId
+	      AND p.status = 'APPROVED'
+	      AND p.isOvertime = true
+	      AND MONTH(p.workDate) = :month
+	      AND YEAR(p.workDate) = :year
+	    """)
+	Double sumApprovedOvertimeAmount(
+	        @Param("empId") Long empId,
+	        @Param("month") int month,
+	        @Param("year") int year);
+
+	// ✅ Monthly overtime entries list
+	@Query("""
+	    SELECT p FROM ProductionEntry p
+	    WHERE p.employee.id = :empId
+	      AND p.isOvertime = true
+	      AND (:status IS NULL OR p.status = :status)
+	      AND MONTH(p.workDate) = :month
+	      AND YEAR(p.workDate) = :year
+	    ORDER BY p.workDate DESC
+	    """)
+	List<ProductionEntry> findOvertimeEntries(
+	        @Param("empId") Long empId,
+	        @Param("status") String status,
+	        @Param("month") int month,
+	        @Param("year") int year);
+
+	// ✅ Monthly overtime summary
+	@Query("""
+	    SELECT 
+	        COUNT(p),
+	        COALESCE(SUM(p.quantity), 0),
+	        COALESCE(SUM(p.amount), 0)
+	    FROM ProductionEntry p
+	    WHERE p.employee.id = :empId
+	      AND p.isOvertime = true
+	      AND p.status = 'APPROVED'
+	      AND MONTH(p.workDate) = :month
+	      AND YEAR(p.workDate) = :year
+	    """)
+	Object[] getOvertimeSummary(
+	        @Param("empId") Long empId,
+	        @Param("month") int month,
+	        @Param("year") int year);
+
+	// ✅ Aaj ki overtime entries
+	@Query("""
+	    SELECT p FROM ProductionEntry p
+	    WHERE p.employee.id = :empId
+	      AND p.isOvertime = true
+	      AND p.workDate = :today
+	    ORDER BY p.id DESC
+	    """)
+	List<ProductionEntry> findTodayOvertimeEntries(
+	        @Param("empId") Long empId,
+	        @Param("today") LocalDate today);
+
+	// ✅ Aaj ka overtime total
+	@Query("""
+	    SELECT 
+	        COUNT(p),
+	        COALESCE(SUM(p.quantity), 0),
+	        COALESCE(SUM(p.amount), 0)
+	    FROM ProductionEntry p
+	    WHERE p.employee.id = :empId
+	      AND p.isOvertime = true
+	      AND p.workDate = :today
+	    """)
+	Object[] getTodayOvertimeSummary(
+	        @Param("empId") Long empId,
+	        @Param("today") LocalDate today);
+	
+	
+	
 
 }

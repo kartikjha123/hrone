@@ -26,6 +26,7 @@ import com.usermanagement.responseDto.EmployeeSummaryDto;
 import com.usermanagement.responseDto.ItemWiseSummaryDto;
 import com.usermanagement.responseDto.MonthlyProductionReportDto;
 import com.usermanagement.responseDto.MyProductionResponseDto;
+import com.usermanagement.responseDto.OvertimeSummaryDto;
 import com.usermanagement.responseDto.ProductionDashboardDto;
 import com.usermanagement.responseDto.ProductionEntryResponseDto;
 import com.usermanagement.service.NotificationService;
@@ -60,6 +61,13 @@ public class ProductionServiceImpl implements ProductionService {
 		entry.setWorkDate(LocalDate.now());
 		entry.setQuantity(productionEntryRequestDto.getQuantity());
 		entry.setStatus("PENDING");
+		
+		// ✅ ye add karo
+		entry.setIsOvertime(
+		    productionEntryRequestDto.getIsOvertime() != null 
+		    && productionEntryRequestDto.getIsOvertime()
+		);
+		
 		productionEntryRepository.save(entry);
 
 		// Notify Manager
@@ -87,6 +95,12 @@ public class ProductionServiceImpl implements ProductionService {
 			entry.setWorkDate(bulkRequest.getWorkDate());
 			entry.setRemarks(itemDto.getRemarks());
 			entry.setStatus("PENDING");
+			
+			// ✅ ye add karo
+			entry.setIsOvertime(
+			    itemDto.getIsOvertime() != null && itemDto.getIsOvertime()
+			);
+			
 			return entry;
 		}).collect(Collectors.toList());
 
@@ -165,6 +179,7 @@ public class ProductionServiceImpl implements ProductionService {
 		dto.setEmployeeId(entry.getEmployee().getId());
 		dto.setUnit(entry.getItem().getUnit());
 		dto.setEmployeeName(entry.getEmployee().getFirstName() + " " + entry.getEmployee().getLastName());
+		dto.setIsOvertime(entry.getIsOvertime());
 		return dto;
 	}
 
@@ -406,4 +421,80 @@ public class ProductionServiceImpl implements ProductionService {
 //	            "PROD_STATUS_UPDATE"
 //	    );
 //	}
+	
+	
+	// ── Monthly Overtime Summary ─────────────────────────────────
+	@Override
+	@Transactional(readOnly = true)
+	public OvertimeSummaryDto getOvertimeSummary(Long employeeId,
+	        Integer month, Integer year) {
+
+	    Employee emp = employeeRepository.findById(employeeId)
+	            .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+	    LocalDate now = LocalDate.now();
+	    int m = month != null ? month : now.getMonthValue();
+	    int y = year  != null ? year  : now.getYear();
+
+	    List<ProductionEntryResponseDto> entries = productionEntryRepository
+	            .findOvertimeEntries(employeeId, null, m, y)
+	            .stream()
+	            .map(this::mapToResponseDto)
+	            .toList();
+
+	    Object[] summary = productionEntryRepository
+	            .getOvertimeSummary(employeeId, m, y);
+
+	    Long totalEntries  = summary[0] != null ? ((Number) summary[0]).longValue()  : 0L;
+	    Integer totalQty   = summary[1] != null ? ((Number) summary[1]).intValue()   : 0;
+	    Double totalAmount = summary[2] != null ? ((Number) summary[2]).doubleValue(): 0.0;
+
+	    return new OvertimeSummaryDto(
+	            emp.getFirstName() + " " + emp.getLastName(),
+	            emp.getEmployeeCode(),
+	            java.time.Month.of(m).name() + " " + y,
+	            y,
+	            totalEntries,
+	            totalQty,
+	            totalAmount,
+	            entries
+	    );
+	}
+
+	// ── Aaj ka Overtime Summary ──────────────────────────────────
+	@Override
+	@Transactional(readOnly = true)
+	public OvertimeSummaryDto getTodayOvertimeSummary(Long employeeId) {
+
+	    Employee emp = employeeRepository.findById(employeeId)
+	            .orElseThrow(() -> new RuntimeException("Employee not found"));
+
+	    LocalDate today = LocalDate.now();
+
+	    List<ProductionEntryResponseDto> entries = productionEntryRepository
+	            .findTodayOvertimeEntries(employeeId, today)
+	            .stream()
+	            .map(this::mapToResponseDto)
+	            .toList();
+
+	    Object[] summary = productionEntryRepository
+	            .getTodayOvertimeSummary(employeeId, today);
+
+	    Long totalEntries  = summary[0] != null ? ((Number) summary[0]).longValue()  : 0L;
+	    Integer totalQty   = summary[1] != null ? ((Number) summary[1]).intValue()   : 0;
+	    Double totalAmount = summary[2] != null ? ((Number) summary[2]).doubleValue(): 0.0;
+
+	    return new OvertimeSummaryDto(
+	            emp.getFirstName() + " " + emp.getLastName(),
+	            emp.getEmployeeCode(),
+	            "TODAY - " + today,
+	            today.getYear(),
+	            totalEntries,
+	            totalQty,
+	            totalAmount,
+	            entries
+	    );
+	}
+	
+	
 }

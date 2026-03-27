@@ -6,6 +6,8 @@ public class ProductionEntryRequestDto {
 	private Long itemId;
 	private Integer quantity;
 	
+	private Boolean isOvertime = false;
+	
 	public ProductionEntryRequestDto() {
 		super();
 		// TODO Auto-generated constructor stub
@@ -44,6 +46,11 @@ public class ProductionEntryRequestDto {
 	
 	
 	
-	
+	public Boolean getIsOvertime() {
+	    return isOvertime;
+	}
+	public void setIsOvertime(Boolean isOvertime) {
+	    this.isOvertime = isOvertime;
+	}
 	
 }

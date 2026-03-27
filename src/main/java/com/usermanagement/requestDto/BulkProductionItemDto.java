@@ -4,6 +4,15 @@ public class BulkProductionItemDto {
     private Long itemId;
     private Integer quantity;
     private String remarks;
+    
+    private Boolean isOvertime = false;
+
+    public Boolean getIsOvertime() {
+        return isOvertime;
+    }
+    public void setIsOvertime(Boolean isOvertime) {
+        this.isOvertime = isOvertime;
+    }
 
     public Long getItemId() {
         return itemId;

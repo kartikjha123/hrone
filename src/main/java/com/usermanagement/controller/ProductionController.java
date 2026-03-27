@@ -176,6 +176,30 @@ public class ProductionController {
 	            "Entry fetched",
 	            productionService.getEntryById(id)));
 	}
+	
+	@Operation(summary = "Monthly Overtime Summary",
+	           description = "Employee ka monthly overtime — kitna kiya, kitna approve, kitna paisa")
+	@GetMapping("/overtime-summary")
+	public ResponseEntity<?> getOvertimeSummary(
+	        @RequestParam Long employeeId,
+	        @RequestParam(required = false) Integer month,
+	        @RequestParam(required = false) Integer year) {
+
+	    return ResponseEntity.ok(new ResponseMessageDto(200,
+	            "Overtime summary fetched",
+	            productionService.getOvertimeSummary(employeeId, month, year)));
+	}
+
+	@Operation(summary = "Aaj ka Overtime Summary",
+	           description = "Employee ne aaj kitna overtime kiya")
+	@GetMapping("/overtime-summary/today")
+	public ResponseEntity<?> getTodayOvertimeSummary(
+	        @RequestParam Long employeeId) {
+
+	    return ResponseEntity.ok(new ResponseMessageDto(200,
+	            "Today's overtime summary fetched",
+	            productionService.getTodayOvertimeSummary(employeeId)));
+	}
 
 	
 }

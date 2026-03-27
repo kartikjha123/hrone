@@ -7,6 +7,8 @@ public class BulkProductionRequestDto {
     private Long employeeId;
     private LocalDate workDate;
     private List<BulkProductionItemDto> items;
+    
+  
 
     public Long getEmployeeId() {
         return employeeId;

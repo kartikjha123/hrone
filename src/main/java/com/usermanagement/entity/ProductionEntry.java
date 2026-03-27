@@ -48,6 +48,9 @@ public class ProductionEntry {
 	
 	private String supervisorComments;
 	
+	@Column(name = "is_overtime", nullable = false)
+	private Boolean isOvertime = false;
+	
 	
 
 	public ProductionEntry() {
@@ -143,6 +146,11 @@ public class ProductionEntry {
 		this.supervisorComments = supervisorComments;
 	}
 	
-	
+	public Boolean getIsOvertime() {
+	    return isOvertime;
+	}
+	public void setIsOvertime(Boolean isOvertime) {
+	    this.isOvertime = isOvertime;
+	}
 	
 }

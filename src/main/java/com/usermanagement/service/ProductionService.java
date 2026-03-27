@@ -13,6 +13,7 @@ import com.usermanagement.responseDto.EmployeeSummaryDto;
 import com.usermanagement.responseDto.ItemWiseSummaryDto;
 import com.usermanagement.responseDto.MonthlyProductionReportDto;
 import com.usermanagement.responseDto.MyProductionResponseDto;
+import com.usermanagement.responseDto.OvertimeSummaryDto;
 import com.usermanagement.responseDto.ProductionDashboardDto;
 import com.usermanagement.responseDto.ProductionEntryResponseDto;
 
@@ -47,6 +48,9 @@ public void addProductionEntry(ProductionEntryRequestDto productionEntryRequestD
 	
 	public ProductionEntryResponseDto getEntryById(Long id);
 	
+	
+	OvertimeSummaryDto getOvertimeSummary(Long employeeId, Integer month, Integer year);
+	OvertimeSummaryDto getTodayOvertimeSummary(Long employeeId);
 	
 
 
