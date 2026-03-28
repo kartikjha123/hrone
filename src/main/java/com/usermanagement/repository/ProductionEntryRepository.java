@@ -252,5 +252,95 @@ public interface ProductionEntryRepository  extends JpaRepository<ProductionEntr
 	
 	
 	
+	
+	
+	// ✅ Daily graph — overtime bhi saath
+	@Query("""
+	    SELECT
+	        p.workDate,
+	        COUNT(p),
+	        SUM(p.quantity),
+	        SUM(p.amount),
+	        SUM(CASE WHEN p.status = 'APPROVED' THEN 1 ELSE 0 END),
+	        SUM(CASE WHEN p.status = 'PENDING'  THEN 1 ELSE 0 END),
+	        SUM(CASE WHEN p.status = 'REJECTED' THEN 1 ELSE 0 END),
+	        SUM(CASE WHEN p.isOvertime = true   THEN 1 ELSE 0 END),
+	        SUM(CASE WHEN p.isOvertime = true   THEN p.quantity ELSE 0 END),
+	        SUM(CASE WHEN p.isOvertime = true   THEN p.amount   ELSE 0 END)
+	    FROM ProductionEntry p
+	    WHERE MONTH(p.workDate) = :month
+	      AND YEAR(p.workDate)  = :year
+	    GROUP BY p.workDate
+	    ORDER BY p.workDate ASC
+	    """)
+	List<Object[]> findDailyProductionGraph(
+	        @Param("month") int month,
+	        @Param("year") int year);
+
+
+	// ✅ Monthly totals — overtime bhi saath
+	@Query("""
+		    SELECT
+		        COUNT(p),
+		        SUM(p.quantity),
+		        SUM(p.amount),
+		        SUM(CASE WHEN p.status = 'APPROVED' THEN 1 ELSE 0 END),
+		        SUM(CASE WHEN p.status = 'PENDING'  THEN 1 ELSE 0 END),
+		        SUM(CASE WHEN p.status = 'REJECTED' THEN 1 ELSE 0 END),
+		        SUM(CASE WHEN p.isOvertime = true   THEN 1 ELSE 0 END),
+		        SUM(CASE WHEN p.isOvertime = true   THEN p.quantity ELSE 0 END),
+		        SUM(CASE WHEN p.isOvertime = true   THEN p.amount   ELSE 0 END)
+		    FROM ProductionEntry p
+		    WHERE MONTH(p.workDate) = :month
+		      AND YEAR(p.workDate)  = :year
+		""")
+		List<Object[]> findMonthlyTotals(@Param("month") int month,
+		                                 @Param("year") int year);
+	
+	
+	@Query("SELECT COUNT(p) FROM ProductionEntry p WHERE " +
+		       "p.employee.id IN :ids AND MONTH(p.workDate) = :month AND YEAR(p.workDate) = :year")
+		long countByEmployeeIdsAndMonth(@Param("ids") List<Long> ids,
+		        @Param("month") int month, @Param("year") int year);
+
+		@Query("SELECT COUNT(p) FROM ProductionEntry p WHERE " +
+		       "p.employee.id IN :ids AND p.status = :status " +
+		       "AND MONTH(p.workDate) = :month AND YEAR(p.workDate) = :year")
+		long countByEmployeeIdsStatusAndMonth(@Param("ids") List<Long> ids,
+		        @Param("status") String status,
+		        @Param("month") int month, @Param("year") int year);
+
+		@Query("SELECT COALESCE(SUM(p.amount), 0) FROM ProductionEntry p WHERE " +
+		       "p.employee.id IN :ids AND MONTH(p.workDate) = :month AND YEAR(p.workDate) = :year")
+		double sumAmountByEmployeeIdsAndMonth(@Param("ids") List<Long> ids,
+		        @Param("month") int month, @Param("year") int year);
+
+		@Query("SELECT COALESCE(SUM(p.amount), 0) FROM ProductionEntry p WHERE " +
+		       "p.employee.id IN :ids AND p.status = :status " +
+		       "AND MONTH(p.workDate) = :month AND YEAR(p.workDate) = :year")
+		double sumAmountByEmployeeIdsStatusAndMonth(@Param("ids") List<Long> ids,
+		        @Param("status") String status,
+		        @Param("month") int month, @Param("year") int year);
+
+		@Query("SELECT COUNT(p) FROM ProductionEntry p WHERE " +
+		       "p.employee.id IN :ids AND p.isOvertime = true " +
+		       "AND MONTH(p.workDate) = :month AND YEAR(p.workDate) = :year")
+		long countOvertimeByEmployeeIdsAndMonth(@Param("ids") List<Long> ids,
+		        @Param("month") int month, @Param("year") int year);
+
+		@Query("SELECT COALESCE(SUM(p.amount), 0) FROM ProductionEntry p WHERE " +
+		       "p.employee.id IN :ids AND p.isOvertime = true " +
+		       "AND MONTH(p.workDate) = :month AND YEAR(p.workDate) = :year")
+		double sumOvertimeAmountByEmployeeIdsAndMonth(@Param("ids") List<Long> ids,
+		        @Param("month") int month, @Param("year") int year);
+
+		// SuperAdmin — department-wise summary
+		@Query("SELECT e.department, COUNT(p), SUM(p.amount) " +
+		       "FROM ProductionEntry p JOIN p.employee e WHERE " +
+		       "MONTH(p.workDate) = :month AND YEAR(p.workDate) = :year " +
+		       "GROUP BY e.department ORDER BY SUM(p.amount) DESC")
+		List<Object[]> findDepartmentWiseSummary(
+		        @Param("month") int month, @Param("year") int year);
+	
 
 }

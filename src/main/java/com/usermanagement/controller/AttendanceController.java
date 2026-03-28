@@ -134,5 +134,46 @@ public class AttendanceController {
                 "Attendance bulk approved successfully"));
     }
     
+    @Operation(
+    	    summary = "SuperAdmin - Today's Attendance Summary",
+    	    description = """
+    	        Aaj ka attendance summary with pagination.
+    	        
+    	        📌 filter values:
+    	        - No filter   → sabka record (default)
+    	        - PUNCHED_IN  → sirf jinhe aaj punch in hua
+    	        - PUNCHED_OUT → sirf jinhe aaj punch out bhi hua
+    	        
+    	        📌 punchStatus values in response:
+    	        - NOT_PUNCHED  → aaj aaya hi nahi
+    	        - PUNCHED_IN   → punch in hua, punch out pending
+    	        - PUNCHED_OUT  → punch in + punch out dono ho gaye
+    	        
+    	        📌 status values in response:
+    	        - PP → Present
+    	        - AA → Absent
+    	        - HD → Half Day
+    	        - H  → Holiday
+    	        
+    	        📌 approvalStatus values in response:
+    	        - PENDING  → manager ne approve nahi kiya
+    	        - APPROVED → approved
+    	        - REJECTED → rejected
+    	    """
+    	)
+    	@GetMapping("/today/summary")
+    	public ResponseEntity<?> getTodayAttendanceSummary(
+    	        @RequestParam(defaultValue = "0") int page,
+    	        @RequestParam(defaultValue = "10") int size,
+    	        @RequestParam(required = false) String filter) {
+
+    	    return ResponseEntity.ok(
+    	        new ResponseMessageDto(
+    	            HttpStatus.OK.value(),
+    	            "Today's attendance summary fetched",
+    	            attendanceService.getTodayAttendanceSummary(page, size, filter)
+    	        )
+    	    );
+    	}
     
 }

@@ -2,13 +2,14 @@ package com.usermanagement.responseDto;
 
 
 import java.util.List;
+import java.util.Map;
 
 public class DashboardResponseDto {
 
     private int monthlyAttendanceCount;
     private List<LeaveBalanceDto> leaveBalances;
     private Object lastPayslip;
-    private List<Object> upcomingHolidays;
+    private List<Map<String, String>> upcomingHolidays;
 
     // Getters & Setters
     public int getMonthlyAttendanceCount() { return monthlyAttendanceCount; }
@@ -21,8 +22,8 @@ public class DashboardResponseDto {
     }
     public Object getLastPayslip() { return lastPayslip; }
     public void setLastPayslip(Object lastPayslip) { this.lastPayslip = lastPayslip; }
-    public List<Object> getUpcomingHolidays() { return upcomingHolidays; }
-    public void setUpcomingHolidays(List<Object> upcomingHolidays) {
-        this.upcomingHolidays = upcomingHolidays;
+    public List<Map<String, String>> getUpcomingHolidays() { return upcomingHolidays; }
+    public void setUpcomingHolidays(List<Map<String, String>> upcomingHolidays2) {
+        this.upcomingHolidays = upcomingHolidays2;
     }
 }

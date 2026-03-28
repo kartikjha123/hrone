@@ -11,6 +11,7 @@ import com.usermanagement.requestDto.ProductionEntryRequestDto;
 import com.usermanagement.requestDto.ProductionFilterRequestDto;
 import com.usermanagement.responseDto.EmployeeSummaryDto;
 import com.usermanagement.responseDto.ItemWiseSummaryDto;
+import com.usermanagement.responseDto.MonthlyProductionGraphResponseDto;
 import com.usermanagement.responseDto.MonthlyProductionReportDto;
 import com.usermanagement.responseDto.MyProductionResponseDto;
 import com.usermanagement.responseDto.OvertimeSummaryDto;
@@ -52,6 +53,9 @@ public void addProductionEntry(ProductionEntryRequestDto productionEntryRequestD
 	OvertimeSummaryDto getOvertimeSummary(Long employeeId, Integer month, Integer year);
 	OvertimeSummaryDto getTodayOvertimeSummary(Long employeeId);
 	
+	
+	public MonthlyProductionGraphResponseDto getMonthlyProductionGraph(
+	        Integer month, Integer year) ;
 
 
 }

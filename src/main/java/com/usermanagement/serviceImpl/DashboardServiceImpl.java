@@ -23,13 +23,16 @@ public class DashboardServiceImpl implements DashboardService {
     private final AttendanceRepository attendanceRepository;
     private final LeaveBalanceRepository leaveBalanceRepository;
     private final PayrollRepository payrollRepository;
+    private final HolidayRepository holidayRepository;
 
     public DashboardServiceImpl(AttendanceRepository attendanceRepository,
                                  LeaveBalanceRepository leaveBalanceRepository,
-                                 PayrollRepository payrollRepository) {
+                                 PayrollRepository payrollRepository,
+                                 HolidayRepository holidayRepository) {
         this.attendanceRepository = attendanceRepository;
         this.leaveBalanceRepository = leaveBalanceRepository;
         this.payrollRepository = payrollRepository;
+        this.holidayRepository = holidayRepository; 
     }
 
     @Override
@@ -71,12 +74,21 @@ public class DashboardServiceImpl implements DashboardService {
          .findFirst()
          .ifPresent(p -> dto.setLastPayslip(p));
 
-        // 4. ✅ Upcoming Holidays
-        dto.setUpcomingHolidays(List.of(
-            Map.of("date", "2026-01-26", "name", "Republic Day"),
-            Map.of("date", "2026-08-15", "name", "Independence Day")
-        ));
+//        // 4. ✅ Upcoming Holidays
+//        dto.setUpcomingHolidays(List.of(
+//            Map.of("date", "2026-01-26", "name", "Republic Day"),
+//            Map.of("date", "2026-08-15", "name", "Independence Day")
+//        ));
+        
+     // ✅ BAAD MEIN (DB se real data)
+     // 4. ✅ Upcoming Holidays — DB se real data (hardcoded hataya)
+        List<Map<String, String>> upcomingHolidays = holidayRepository
+            .findUpcoming(LocalDate.now())
+            .stream()
+            .map(h -> Map.of("date", h.getDate().toString(), "name", h.getName()))
+            .collect(Collectors.toList());
+        dto.setUpcomingHolidays(upcomingHolidays);
 
         return dto;
     }
-}
+    }

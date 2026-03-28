@@ -202,4 +202,18 @@ public class ProductionController {
 	}
 
 	
+	@Operation(
+		    summary = "Admin — Monthly Production Graph",
+		    description = "Har din ka production count, quantity, amount — graph ke liye formatted"
+		)
+		@GetMapping("/admin/monthly-graph")
+		public ResponseEntity<?> getMonthlyProductionGraph(
+		        @RequestParam(required = false) Integer month,
+		        @RequestParam(required = false) Integer year) {
+
+		    return ResponseEntity.ok(new ResponseMessageDto(200,
+		            "Monthly production graph data fetched",
+		            productionService.getMonthlyProductionGraph(month, year)));
+		}
+	
 }

@@ -46,4 +46,36 @@ public interface LeaveApplicationRepository extends JpaRepository<LeaveApplicati
             @Param("employeeId") Long employeeId,
             @Param("from") LocalDate from,
             @Param("to") LocalDate to);
+    
+    
+    
+    // ── Manager Report ke liye ─────────────────────────────────────
+
+    // Team ke employees ki total leave applications
+    @Query("SELECT COUNT(l) FROM LeaveApplication l WHERE " +
+           "l.employee.id IN :ids AND MONTH(l.appliedAt) = :month AND YEAR(l.appliedAt) = :year")
+    long countByEmployeeIdsAndMonth(@Param("ids") List<Long> ids,
+            @Param("month") int month, @Param("year") int year);
+
+    // Team ke employees ki status-wise leave count
+    @Query("SELECT COUNT(l) FROM LeaveApplication l WHERE " +
+           "l.employee.id IN :ids AND l.status = :status " +
+           "AND MONTH(l.appliedAt) = :month AND YEAR(l.appliedAt) = :year")
+    long countByEmployeeIdsStatusAndMonth(@Param("ids") List<Long> ids,
+            @Param("status") String status,
+            @Param("month") int month, @Param("year") int year);
+
+    // ── SuperAdmin Report ke liye ──────────────────────────────────
+
+    // Pure company ki total leave applications
+    @Query("SELECT COUNT(l) FROM LeaveApplication l WHERE " +
+           "MONTH(l.appliedAt) = :month AND YEAR(l.appliedAt) = :year")
+    long countAllByMonth(@Param("month") int month, @Param("year") int year);
+
+    // Pure company ki status-wise leave count
+    @Query("SELECT COUNT(l) FROM LeaveApplication l WHERE " +
+           "l.status = :status AND MONTH(l.appliedAt) = :month AND YEAR(l.appliedAt) = :year")
+    long countAllByStatusAndMonth(@Param("status") String status,
+            @Param("month") int month, @Param("year") int year);
+    
 }

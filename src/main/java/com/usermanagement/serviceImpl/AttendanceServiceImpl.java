@@ -8,6 +8,9 @@ import java.time.YearMonth;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +25,8 @@ import com.usermanagement.responseDto.AttendanceStatusDto;
 import com.usermanagement.responseDto.ManagerAttendanceResponseDto;
 import com.usermanagement.responseDto.MyAttendanceDto;
 import com.usermanagement.responseDto.OvertimeResponseDto;
+import com.usermanagement.responseDto.TodayAttendanceRecordDto;
+import com.usermanagement.responseDto.TodayAttendanceSummaryDto;
 import com.usermanagement.service.AttendanceService;
 
 @Service
@@ -348,4 +353,84 @@ public class AttendanceServiceImpl implements AttendanceService {
 
 	    attendanceRepository.saveAll(records); // ✅ ek saath save
 	}
+	
+	
+	
+	@Override
+	public TodayAttendanceSummaryDto getTodayAttendanceSummary(int page, int size, String filter) {
+
+	    LocalDate today = LocalDate.now();
+	    Pageable pageable = PageRequest.of(page, size);
+
+	    // ✅ Filter ke according data fetch karo
+	    Page<Attendance> attendancePage;
+
+	    if ("PUNCHED_IN".equalsIgnoreCase(filter)) {
+	        attendancePage = attendanceRepository.findTodayPunchedIn(today, pageable);
+	    } else if ("PUNCHED_OUT".equalsIgnoreCase(filter)) {
+	        attendancePage = attendanceRepository.findTodayPunchedOut(today, pageable);
+	    } else {
+	        attendancePage = attendanceRepository.findTodayAttendance(today, pageable);
+	    }
+
+	    // ✅ Records map karo
+	    List<TodayAttendanceRecordDto> records = attendancePage.getContent()
+	        .stream()
+	        .map(a -> {
+	            TodayAttendanceRecordDto rec = new TodayAttendanceRecordDto();
+	            rec.setEmployeeId(a.getEmployee().getId());
+	            rec.setEmployeeCode(a.getEmployee().getEmployeeCode());
+	            rec.setEmployeeName(a.getEmployee().getFirstName()
+	                    + " " + a.getEmployee().getLastName());
+	            rec.setDepartment(a.getEmployee().getDepartment());
+	            rec.setDesignation(a.getEmployee().getDesignation());
+	            rec.setStatus(a.getStatus());
+	            rec.setApprovalStatus(a.getApprovalStatus());
+
+	            rec.setPunchIn(a.getPunchIn() != null
+	                    ? a.getPunchIn().toString() : null);
+	            rec.setPunchOut(a.getPunchOut() != null
+	                    ? a.getPunchOut().toString() : null);
+
+	            // ✅ Total hours calculate
+	            if (a.getPunchIn() != null && a.getPunchOut() != null) {
+	                long minutes = Duration.between(a.getPunchIn(), a.getPunchOut()).toMinutes();
+	                rec.setTotalHours((minutes / 60) + "h " + (minutes % 60) + "m");
+	            }
+
+	            // ✅ Punch status set karo
+	            if (a.getPunchIn() == null) {
+	                rec.setPunchStatus("NOT_PUNCHED");
+	            } else if (a.getPunchOut() == null) {
+	                rec.setPunchStatus("PUNCHED_IN");
+	            } else {
+	                rec.setPunchStatus("PUNCHED_OUT");
+	            }
+
+	            return rec;
+	        })
+	        .collect(Collectors.toList());
+
+	    // ✅ Summary counts
+	    long totalEmployees = employeeRepository.count();
+	    long punchedIn      = attendanceRepository.countPunchedInToday(today);
+	    long punchedOut     = attendanceRepository.countPunchedOutToday(today);
+	    long absent         = attendanceRepository.countAbsentToday(today);
+	    long notPunchedIn   = totalEmployees - punchedIn;
+
+	    // ✅ Final DTO
+	    TodayAttendanceSummaryDto summary = new TodayAttendanceSummaryDto();
+	    summary.setTotalEmployees((int) totalEmployees);
+	    summary.setPresentCount((int) punchedIn);
+	    summary.setPunchedOutCount((int) punchedOut);
+	    summary.setAbsentCount((int) absent);
+	    summary.setNotPunchedIn((int) notPunchedIn);
+	    summary.setRecords(records);
+	    summary.setCurrentPage(page);
+	    summary.setTotalPages(attendancePage.getTotalPages());
+	    summary.setTotalRecords(attendancePage.getTotalElements());
+
+	    return summary;
+	}
+	
 }

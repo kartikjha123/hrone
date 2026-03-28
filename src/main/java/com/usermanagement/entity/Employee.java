@@ -28,6 +28,10 @@ public class Employee {
 	private String designation;
 	private String employeeCode;
 	private LocalDate joiningDate;
+	
+	// Employee.java mein ye field add karo
+	@Column(name = "date_of_birth")
+	private LocalDate dateOfBirth;
 
 	@OneToOne
 	@JoinColumn(name = "user_id", unique = true)
@@ -151,7 +155,9 @@ public class Employee {
 		this.arResetYear = arResetYear;
 	}
 
-	
+	// Getter & Setter
+	public LocalDate getDateOfBirth() { return dateOfBirth; }
+	public void setDateOfBirth(LocalDate dateOfBirth) { this.dateOfBirth = dateOfBirth; }
 
 	
 	

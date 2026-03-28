@@ -22,8 +22,10 @@ import com.usermanagement.requestDto.ManagerProductionFilterDto;
 import com.usermanagement.requestDto.MyProductionFilterDto;
 import com.usermanagement.requestDto.ProductionEntryRequestDto;
 import com.usermanagement.requestDto.ProductionFilterRequestDto;
+import com.usermanagement.responseDto.DailyProductionGraphDto;
 import com.usermanagement.responseDto.EmployeeSummaryDto;
 import com.usermanagement.responseDto.ItemWiseSummaryDto;
+import com.usermanagement.responseDto.MonthlyProductionGraphResponseDto;
 import com.usermanagement.responseDto.MonthlyProductionReportDto;
 import com.usermanagement.responseDto.MyProductionResponseDto;
 import com.usermanagement.responseDto.OvertimeSummaryDto;
@@ -496,5 +498,81 @@ public class ProductionServiceImpl implements ProductionService {
 	    );
 	}
 	
+	
+	@Override
+	@Transactional(readOnly = true)
+	public MonthlyProductionGraphResponseDto getMonthlyProductionGraph(
+	        Integer month, Integer year) {
+
+	    LocalDate now = LocalDate.now();
+	    int m = month != null ? month : now.getMonthValue();
+	    int y = year  != null ? year  : now.getYear();
+
+	    // 1. ✅ Daily graph data — overtime saath
+	    List<Object[]> rows = productionEntryRepository.findDailyProductionGraph(m, y);
+
+	    List<DailyProductionGraphDto> dailyData = rows.stream().map(row -> {
+
+	        String date         = row[0].toString();
+	        int totalEntries    = ((Number) row[1]).intValue();
+	        int totalQuantity   = row[2] != null ? ((Number) row[2]).intValue()    : 0;
+	        double totalAmount  = row[3] != null ? ((Number) row[3]).doubleValue() : 0.0;
+	        int approvedCount   = row[4] != null ? ((Number) row[4]).intValue()    : 0;
+	        int pendingCount    = row[5] != null ? ((Number) row[5]).intValue()    : 0;
+	        int rejectedCount   = row[6] != null ? ((Number) row[6]).intValue()    : 0;
+
+	        // ✅ Overtime fields
+	        int otEntries       = row[7] != null ? ((Number) row[7]).intValue()    : 0;
+	        int otQuantity      = row[8] != null ? ((Number) row[8]).intValue()    : 0;
+	        double otAmount     = row[9] != null ? ((Number) row[9]).doubleValue() : 0.0;
+
+	        return new DailyProductionGraphDto(
+	                date, totalEntries, totalQuantity, totalAmount,
+	                approvedCount, pendingCount, rejectedCount,
+	                otEntries, otQuantity, otAmount  // ✅ overtime saath
+	        );
+
+	    }).collect(Collectors.toList());
+
+	    // 2. ✅ Monthly totals — overtime saath
+	    
+	    List<Object[]> list = productionEntryRepository.findMonthlyTotals(m, y);
+
+	    Object[] totals = (list != null && !list.isEmpty())
+	            ? list.get(0)
+	            : new Object[6];
+
+	    long totalEntries   = totals[0] != null ? ((Number) totals[0]).longValue()   : 0L;
+	    int totalQuantity   = totals[1] != null ? ((Number) totals[1]).intValue()    : 0;
+	    double totalAmount  = totals[2] != null ? ((Number) totals[2]).doubleValue() : 0.0;
+	    long totalApproved  = totals[3] != null ? ((Number) totals[3]).longValue()   : 0L;
+	    long totalPending   = totals[4] != null ? ((Number) totals[4]).longValue()   : 0L;
+	    long totalRejected  = totals[5] != null ? ((Number) totals[5]).longValue()   : 0L;
+
+	    // ✅ Overtime month totals
+	    long otEntries      = totals[6] != null ? ((Number) totals[6]).longValue()   : 0L;
+	    int otQuantity      = totals[7] != null ? ((Number) totals[7]).intValue()    : 0;
+	    double otAmount     = totals[8] != null ? ((Number) totals[8]).doubleValue() : 0.0;
+
+	    // 3. ✅ Response build karo
+	    MonthlyProductionGraphResponseDto response = new MonthlyProductionGraphResponseDto();
+	    response.setMonth(java.time.Month.of(m).name() + " " + y);
+	    response.setTotalDaysWithData(dailyData.size());
+	    response.setTotalEntries(totalEntries);
+	    response.setTotalQuantity(totalQuantity);
+	    response.setTotalAmount(totalAmount);
+	    response.setTotalApproved(totalApproved);
+	    response.setTotalPending(totalPending);
+	    response.setTotalRejected(totalRejected);
+
+	    // ✅ Overtime set karo
+	    response.setTotalOvertimeEntries(otEntries);
+	    response.setTotalOvertimeQuantity(otQuantity);
+	    response.setTotalOvertimeAmount(otAmount);
+
+	    response.setDailyData(dailyData);
+
+	    return response;
+	}
 	
 }

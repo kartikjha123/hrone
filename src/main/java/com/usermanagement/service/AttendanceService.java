@@ -9,6 +9,7 @@ import com.usermanagement.responseDto.AttendanceStatusDto;
 import com.usermanagement.responseDto.ManagerAttendanceResponseDto;
 import com.usermanagement.responseDto.MyAttendanceDto;
 import com.usermanagement.responseDto.OvertimeResponseDto;
+import com.usermanagement.responseDto.TodayAttendanceSummaryDto;
 
 public interface AttendanceService {
 
@@ -39,4 +40,6 @@ public interface AttendanceService {
 	
 	// AttendanceService interface mein add karo
 	void bulkApproveAttendance(BulkApproveRequestDto request);
+	
+	TodayAttendanceSummaryDto getTodayAttendanceSummary(int page, int size, String filter);
 }
