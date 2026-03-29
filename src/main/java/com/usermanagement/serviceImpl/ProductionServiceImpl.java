@@ -444,12 +444,25 @@ public class ProductionServiceImpl implements ProductionService {
 	            .map(this::mapToResponseDto)
 	            .toList();
 
-	    Object[] summary = productionEntryRepository
+	    // ✅ List<Object[]> se pehli row lo
+	    List<Object[]> rawList = productionEntryRepository
 	            .getOvertimeSummary(employeeId, m, y);
 
-	    Long totalEntries  = summary[0] != null ? ((Number) summary[0]).longValue()  : 0L;
-	    Integer totalQty   = summary[1] != null ? ((Number) summary[1]).intValue()   : 0;
-	    Double totalAmount = summary[2] != null ? ((Number) summary[2]).doubleValue(): 0.0;
+	    // ✅ Null safe check
+	    Long totalEntries  = 0L;
+	    Integer totalQty   = 0;
+	    Double totalAmount = 0.0;
+
+	    if (rawList != null && !rawList.isEmpty()) {
+	        Object[] summary = rawList.get(0); // ✅ Pehli row
+
+	        totalEntries  = summary[0] != null
+	            ? ((Number) summary[0]).longValue()   : 0L;
+	        totalQty      = summary[1] != null
+	            ? ((Number) summary[1]).intValue()    : 0;
+	        totalAmount   = summary[2] != null
+	            ? ((Number) summary[2]).doubleValue() : 0.0;
+	    }
 
 	    return new OvertimeSummaryDto(
 	            emp.getFirstName() + " " + emp.getLastName(),
@@ -462,6 +475,7 @@ public class ProductionServiceImpl implements ProductionService {
 	            entries
 	    );
 	}
+
 
 	// ── Aaj ka Overtime Summary ──────────────────────────────────
 	@Override
@@ -479,12 +493,24 @@ public class ProductionServiceImpl implements ProductionService {
 	            .map(this::mapToResponseDto)
 	            .toList();
 
-	    Object[] summary = productionEntryRepository
+	    List<Object[]> rawList = productionEntryRepository
 	            .getTodayOvertimeSummary(employeeId, today);
 
-	    Long totalEntries  = summary[0] != null ? ((Number) summary[0]).longValue()  : 0L;
-	    Integer totalQty   = summary[1] != null ? ((Number) summary[1]).intValue()   : 0;
-	    Double totalAmount = summary[2] != null ? ((Number) summary[2]).doubleValue(): 0.0;
+	    // ✅ Null safe check
+	    Long totalEntries  = 0L;
+	    Integer totalQty   = 0;
+	    Double totalAmount = 0.0;
+
+	    if (rawList != null && !rawList.isEmpty()) {
+	        Object[] summary = rawList.get(0); // ✅ Pehli row
+
+	        totalEntries  = summary[0] != null
+	            ? ((Number) summary[0]).longValue()   : 0L;
+	        totalQty      = summary[1] != null
+	            ? ((Number) summary[1]).intValue()    : 0;
+	        totalAmount   = summary[2] != null
+	            ? ((Number) summary[2]).doubleValue() : 0.0;
+	    }
 
 	    return new OvertimeSummaryDto(
 	            emp.getFirstName() + " " + emp.getLastName(),

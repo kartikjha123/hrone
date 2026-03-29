@@ -218,7 +218,7 @@ public interface ProductionEntryRepository  extends JpaRepository<ProductionEntr
 	      AND MONTH(p.workDate) = :month
 	      AND YEAR(p.workDate) = :year
 	    """)
-	Object[] getOvertimeSummary(
+	List<Object[]> getOvertimeSummary(
 	        @Param("empId") Long empId,
 	        @Param("month") int month,
 	        @Param("year") int year);
@@ -246,7 +246,7 @@ public interface ProductionEntryRepository  extends JpaRepository<ProductionEntr
 	      AND p.isOvertime = true
 	      AND p.workDate = :today
 	    """)
-	Object[] getTodayOvertimeSummary(
+	List<Object[]> getTodayOvertimeSummary(
 	        @Param("empId") Long empId,
 	        @Param("today") LocalDate today);
 	
