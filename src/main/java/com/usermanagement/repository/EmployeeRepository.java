@@ -39,5 +39,10 @@ public interface EmployeeRepository  extends JpaRepository<Employee, Long>{
 	List<Employee> findUpcomingBirthdaysThisMonth(
 	        @Param("month") int month,
 	        @Param("day") int day);
+	
+	
+	// Yeh method add karo
+	Optional<Employee> findByEmployeeCode(String employeeCode);
+
 
 }

@@ -1,7 +1,5 @@
 package com.usermanagement.serviceImpl;
 
-
-
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,7 +24,6 @@ import com.usermanagement.service.NotificationService;
 import jakarta.transaction.Transactional;
 
 @Service
-
 public class AttendanceRegularizationServiceImpl
         implements AttendanceRegularizationService {
 
@@ -37,7 +34,6 @@ public class AttendanceRegularizationServiceImpl
     private final AttendanceRepository attendanceRepository;
     private final NotificationService notificationService;
 
-    // ✅ Constructor injection — production best practice
     public AttendanceRegularizationServiceImpl(
             AttendanceRegularizationRepository arRepository,
             EmployeeRepository employeeRepository,
@@ -62,33 +58,47 @@ public class AttendanceRegularizationServiceImpl
         int currentMonth = today.getMonthValue();
         int currentYear  = today.getYear();
 
-        // ✅ Step 1: New month pe auto reset
+        // Step 1: Auto reset if new month
         autoResetARIfNewMonth(emp, currentMonth, currentYear);
 
-        // ✅ Step 2: Balance check
+        // Step 2: Balance check
         if (emp.getRemainingAR() <= 0) {
             throw new RuntimeException(
-                "Is mahine ke sare AR use ho gaye hain (" + MAX_AR_PER_MONTH + "/" + MAX_AR_PER_MONTH + ")");
+                "All attendance regularization requests for this month "
+                + "have been exhausted ("
+                + MAX_AR_PER_MONTH + "/" + MAX_AR_PER_MONTH + "). "
+                + "Please try again next month."
+            );
         }
 
-        // ✅ Step 3: Future date check
+        // Step 3: Future date check
         if (request.getMissingDate().isAfter(today)) {
-            throw new RuntimeException("Future date ke liye AR apply nahi ho sakta");
+            throw new RuntimeException(
+                "Attendance regularization cannot be applied for a future date. "
+                + "Please select today's or a past date."
+            );
         }
 
-        // ✅ Step 4: Duplicate date check
-        arRepository.findActiveByEmployeeAndDate(employeeId, request.getMissingDate())
+        // Step 4: Duplicate date check
+        arRepository.findActiveByEmployeeAndDate(
+                employeeId, request.getMissingDate())
                 .ifPresent(existing -> {
                     throw new RuntimeException(
-                        "Is date ke liye AR already exist karta hai: " + request.getMissingDate());
+                        "An attendance regularization request already exists "
+                        + "for this date: " + request.getMissingDate()
+                        + ". You cannot apply twice for the same date."
+                    );
                 });
 
-        // ✅ Step 5: Manager check
+        // Step 5: Manager check
         if (emp.getManager() == null) {
-            throw new RuntimeException("Employee ka manager assign nahi hai");
+            throw new RuntimeException(
+                "No manager has been assigned to your profile. "
+                + "Please contact HR for assistance."
+            );
         }
 
-        // ✅ Step 6: AR save
+        // Step 6: Save AR
         AttendanceRegularization ar = new AttendanceRegularization();
         ar.setEmployee(emp);
         ar.setManager(emp.getManager());
@@ -103,12 +113,14 @@ public class AttendanceRegularizationServiceImpl
 
         AttendanceRegularization saved = arRepository.save(ar);
 
-        // ✅ Step 7: Manager ko notification
+        // Step 7: Notify manager
         sendNotificationSafely(
             emp.getManager(),
-            "Naya AR Request",
+            "New Attendance Regularization Request",
             emp.getFirstName() + " " + emp.getLastName()
-                + " ne " + request.getMissingDate() + " ke liye AR apply ki hai",
+                + " has submitted an attendance regularization request "
+                + "for " + request.getMissingDate()
+                + ". Please review at your earliest convenience.",
             "AR_REQUEST"
         );
 
@@ -123,12 +135,19 @@ public class AttendanceRegularizationServiceImpl
     public void approveAR(Long arId, ARApproveDto dto) {
 
         AttendanceRegularization ar = arRepository.findById(arId)
-                .orElseThrow(() -> new RuntimeException("AR request not found: " + arId));
+                .orElseThrow(() -> new RuntimeException(
+                    "Attendance regularization request not found "
+                    + "with ID: " + arId
+                    + ". Please verify the request ID."
+                ));
 
-        // ✅ Sirf PENDING approve/reject ho sakta hai
+        // Only PENDING can be approved/rejected
         if (!"PENDING".equals(ar.getStatus())) {
             throw new RuntimeException(
-                "Sirf PENDING AR requests review ho sakti hain. Current status: " + ar.getStatus());
+                "Only PENDING attendance regularization requests can be "
+                + "approved or rejected. "
+                + "Current status of this request is: " + ar.getStatus()
+            );
         }
 
         ar.setStatus(dto.getStatus());
@@ -137,31 +156,32 @@ public class AttendanceRegularizationServiceImpl
         arRepository.save(ar);
 
         if ("APPROVED".equals(dto.getStatus())) {
-            // ✅ RemainingAR ghataao
+
+            // Deduct remaining AR balance
             Employee emp = ar.getEmployee();
             int newBalance = emp.getRemainingAR() - 1;
-            emp.setRemainingAR(Math.max(newBalance, 0)); // negative se bachao
+            emp.setRemainingAR(Math.max(newBalance, 0));
             employeeRepository.save(emp);
 
-            // ✅ Attendance auto mark
+            // Auto mark attendance
             autoMarkAttendance(ar);
-
         }
 
-        // ✅ Employee ko notification
+        // Notify employee
+        String statusText = "APPROVED".equals(dto.getStatus())
+            ? "Approved" : "Rejected";
+
         sendNotificationSafely(
             ar.getEmployee(),
-            "AR Request " + dto.getStatus(),
-            ar.getMissingDate() + " ki AR request " + dto.getStatus() + " ho gayi. "
-                + (dto.getRemarks() != null ? "Remarks: " + dto.getRemarks() : ""),
+            "Attendance Regularization Request " + statusText,
+            "Your attendance regularization request for "
+                + ar.getMissingDate() + " has been " + statusText + ". "
+                + (dto.getRemarks() != null
+                    ? "Manager remarks: " + dto.getRemarks()
+                    : "No remarks provided."),
             "AR_STATUS_UPDATE"
         );
     }
-
-    // ════════════════════════════════════════════════════
-    // GET HISTORY
-    // ════════════════════════════════════════════════════
-  
 
     // ════════════════════════════════════════════════════
     // PENDING FOR MANAGER
@@ -180,16 +200,26 @@ public class AttendanceRegularizationServiceImpl
     @Override
     @Transactional
     public ARResponseDto updateAR(Long id, ARRequestDto request) {
+
         AttendanceRegularization ar = arRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("AR not found: " + id));
+                .orElseThrow(() -> new RuntimeException(
+                    "Attendance regularization request not found "
+                    + "with ID: " + id
+                ));
 
         if (!"PENDING".equals(ar.getStatus())) {
-            throw new RuntimeException("Sirf PENDING AR update ho sakti hai");
+            throw new RuntimeException(
+                "Only PENDING attendance regularization requests "
+                + "can be updated. "
+                + "Current status is: " + ar.getStatus()
+            );
         }
 
-        // Future date check
         if (request.getMissingDate().isAfter(LocalDate.now())) {
-            throw new RuntimeException("Future date set nahi kar sakte");
+            throw new RuntimeException(
+                "Future date cannot be set for attendance regularization. "
+                + "Please select today's or a past date."
+            );
         }
 
         ar.setMissingDate(request.getMissingDate());
@@ -206,11 +236,19 @@ public class AttendanceRegularizationServiceImpl
     @Override
     @Transactional
     public void deleteAR(Long id) {
+
         AttendanceRegularization ar = arRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("AR not found: " + id));
+                .orElseThrow(() -> new RuntimeException(
+                    "Attendance regularization request not found "
+                    + "with ID: " + id
+                ));
 
         if (!"PENDING".equals(ar.getStatus())) {
-            throw new RuntimeException("Sirf PENDING AR delete ho sakti hai");
+            throw new RuntimeException(
+                "Only PENDING attendance regularization requests "
+                + "can be deleted. "
+                + "Current status is: " + ar.getStatus()
+            );
         }
 
         arRepository.delete(ar);
@@ -221,23 +259,27 @@ public class AttendanceRegularizationServiceImpl
     // ════════════════════════════════════════════════════
     @Override
     public ARBalanceDto getARBalance(Long employeeId) {
+
         Employee emp = findEmployeeById(employeeId);
         LocalDate now = LocalDate.now();
 
-        // Auto reset check
         autoResetARIfNewMonth(emp, now.getMonthValue(), now.getYear());
 
-        int remaining = emp.getRemainingAR() != null ? emp.getRemainingAR() : MAX_AR_PER_MONTH;
+        int remaining = emp.getRemainingAR() != null
+            ? emp.getRemainingAR() : MAX_AR_PER_MONTH;
         int used = MAX_AR_PER_MONTH - remaining;
 
         ARBalanceDto dto = new ARBalanceDto();
         dto.setEmployeeId(employeeId);
-        dto.setEmployeeName(emp.getFirstName() + " " + emp.getLastName());
+        dto.setEmployeeName(
+            emp.getFirstName() + " " + emp.getLastName()
+        );
         dto.setTotalAR(MAX_AR_PER_MONTH);
         dto.setUsedAR(Math.max(used, 0));
         dto.setRemainingAR(remaining);
         dto.setMonth(now.getMonth().getDisplayName(
-                java.time.format.TextStyle.FULL, java.util.Locale.ENGLISH) + " " + now.getYear());
+            java.time.format.TextStyle.FULL,
+            java.util.Locale.ENGLISH) + " " + now.getYear());
 
         return dto;
     }
@@ -246,14 +288,14 @@ public class AttendanceRegularizationServiceImpl
     // PRIVATE HELPERS
     // ════════════════════════════════════════════════════
 
-    /**
-     * New month aane pe AR auto reset karo
-     */
-    private void autoResetARIfNewMonth(Employee emp, int currentMonth, int currentYear) {
-        boolean needsReset = emp.getArResetMonth() == null
-                || emp.getArResetYear() == null
-                || emp.getArResetMonth() != currentMonth
-                || emp.getArResetYear() != currentYear;
+    private void autoResetARIfNewMonth(
+            Employee emp, int currentMonth, int currentYear) {
+
+        boolean needsReset =
+            emp.getArResetMonth() == null
+            || emp.getArResetYear() == null
+            || emp.getArResetMonth() != currentMonth
+            || emp.getArResetYear() != currentYear;
 
         if (needsReset) {
             emp.setRemainingAR(MAX_AR_PER_MONTH);
@@ -263,10 +305,8 @@ public class AttendanceRegularizationServiceImpl
         }
     }
 
-    /**
-     * AR approve hone pe attendance auto create/update karo
-     */
     private void autoMarkAttendance(AttendanceRegularization ar) {
+
         Long employeeId = ar.getEmployee().getId();
         LocalDate date  = ar.getMissingDate();
 
@@ -279,56 +319,67 @@ public class AttendanceRegularizationServiceImpl
             attendance.setDate(date);
         }
 
-        // Punch times set karo
-        if (ar.getRequestedPunchIn()  != null) attendance.setPunchIn(ar.getRequestedPunchIn());
-        if (ar.getRequestedPunchOut() != null) attendance.setPunchOut(ar.getRequestedPunchOut());
+        if (ar.getRequestedPunchIn() != null)
+            attendance.setPunchIn(ar.getRequestedPunchIn());
+        if (ar.getRequestedPunchOut() != null)
+            attendance.setPunchOut(ar.getRequestedPunchOut());
 
         attendance.setStatus("PP");
         attendance.setApprovalStatus("APPROVED");
 
-        // Hours recalculate
-        if (attendance.getPunchIn() != null && attendance.getPunchOut() != null) {
+        if (attendance.getPunchIn() != null
+                && attendance.getPunchOut() != null) {
+
             double totalHours = Duration.between(
-                    attendance.getPunchIn(), attendance.getPunchOut()
+                attendance.getPunchIn(),
+                attendance.getPunchOut()
             ).toMinutes() / 60.0;
 
-            attendance.setTotalHours(Math.round(totalHours * 100.0) / 100.0);
+            attendance.setTotalHours(
+                Math.round(totalHours * 100.0) / 100.0
+            );
 
             double ot = totalHours > 8.0 ? totalHours - 8.0 : 0.0;
-            attendance.setOvertimeHours(Math.round(ot * 100.0) / 100.0);
+            attendance.setOvertimeHours(
+                Math.round(ot * 100.0) / 100.0
+            );
         }
 
         attendanceRepository.save(attendance);
     }
 
-    /**
-     * Notification safely bhejo — agar fail bhi ho to main flow na tute
-     */
-    private void sendNotificationSafely(Employee recipient, String title,
-                                         String message, String type) {
+    private void sendNotificationSafely(
+            Employee recipient, String title,
+            String message, String type) {
         try {
             if (recipient != null) {
-                notificationService.sendNotification(recipient, title, message, type);
+                notificationService.sendNotification(
+                    recipient, title, message, type
+                );
             }
         } catch (Exception e) {
-        	System.out.println(e);
-            // Main flow continue rahega
+            System.out.println(
+                "Notification could not be sent: " + e.getMessage()
+            );
         }
     }
 
     private Employee findEmployeeById(Long id) {
         return employeeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Employee not found: " + id));
+                .orElseThrow(() -> new RuntimeException(
+                    "Employee not found with ID: " + id
+                    + ". Please provide a valid employee ID."
+                ));
     }
 
-    /**
-     * Entity -> ResponseDto mapper
-     */
     private ARResponseDto mapToResponseDto(AttendanceRegularization ar) {
         ARResponseDto dto = new ARResponseDto();
         dto.setId(ar.getId());
         dto.setEmployeeId(ar.getEmployee().getId());
-        dto.setEmployeeName(ar.getEmployee().getFirstName() + " " + ar.getEmployee().getLastName());
+        dto.setEmployeeName(
+            ar.getEmployee().getFirstName() + " "
+            + ar.getEmployee().getLastName()
+        );
         dto.setEmployeeCode(ar.getEmployee().getEmployeeCode());
         dto.setDepartment(ar.getEmployee().getDepartment());
         dto.setMissingDate(ar.getMissingDate());
@@ -337,26 +388,39 @@ public class AttendanceRegularizationServiceImpl
         dto.setManagerRemarks(ar.getManagerRemarks());
         dto.setArMonth(ar.getArMonth());
         dto.setArYear(ar.getArYear());
-        dto.setAppliedAt(ar.getAppliedAt() != null ? ar.getAppliedAt().toString() : null);
-        dto.setActionDate(ar.getActionDate() != null ? ar.getActionDate().toString() : null);
+        dto.setAppliedAt(ar.getAppliedAt() != null
+            ? ar.getAppliedAt().toString() : null);
+        dto.setActionDate(ar.getActionDate() != null
+            ? ar.getActionDate().toString() : null);
 
-        if (ar.getRequestedPunchIn()  != null) dto.setRequestedPunchIn(ar.getRequestedPunchIn().toString());
-        if (ar.getRequestedPunchOut() != null) dto.setRequestedPunchOut(ar.getRequestedPunchOut().toString());
+        if (ar.getRequestedPunchIn() != null)
+            dto.setRequestedPunchIn(
+                ar.getRequestedPunchIn().toString()
+            );
+        if (ar.getRequestedPunchOut() != null)
+            dto.setRequestedPunchOut(
+                ar.getRequestedPunchOut().toString()
+            );
 
         if (ar.getManager() != null) {
-            dto.setManagerName(ar.getManager().getFirstName() + " " + ar.getManager().getLastName());
+            dto.setManagerName(
+                ar.getManager().getFirstName() + " "
+                + ar.getManager().getLastName()
+            );
         }
 
         return dto;
     }
-    
-    @Override
-    public List<ARResponseDto> getEmployeeARHistory(Long employeeId, Integer month, Integer year) {
-        findEmployeeById(employeeId);
 
-        return arRepository.findByEmployeeIdAndMonthYear(employeeId, month, year)
-                .stream()
-                .map(this::mapToResponseDto)
-                .collect(Collectors.toList());
+    @Override
+    public List<ARResponseDto> getEmployeeARHistory(
+            Long employeeId, Integer month, Integer year) {
+        findEmployeeById(employeeId);
+        return arRepository
+            .findByEmployeeIdAndMonthYear(employeeId, month, year)
+            .stream()
+            .map(this::mapToResponseDto)
+            .collect(Collectors.toList());
     }
 }
+
