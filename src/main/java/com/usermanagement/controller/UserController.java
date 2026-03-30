@@ -268,5 +268,63 @@ public class UserController {
 	                    dashboard));
 	}
 	
+	// ─── SuperAdmin APIs ────────────────────────────────
+
+	@Operation(
+	    summary = "SuperAdmin - Organization Hierarchy",
+	    description = "Shows complete org structure: who reports to whom"
+	)
+	@GetMapping("/superadmin/org-hierarchy")
+	public ResponseEntity<ResponseMessageDto> getOrgHierarchy() {
+	    return ResponseEntity.ok(new ResponseMessageDto(
+	        HttpStatus.OK.value(),
+	        "Organization hierarchy fetched successfully",
+	        userService.getOrgHierarchy()
+	    ));
+	}
+
+	@Operation(
+	    summary = "SuperAdmin - Employee Full Profile",
+	    description = "Get complete profile of any employee with manager & reportees"
+	)
+	@GetMapping("/superadmin/employee/{employeeId}/profile")
+	public ResponseEntity<ResponseMessageDto> getEmployeeProfile(
+	        @PathVariable Long employeeId) {
+	    return ResponseEntity.ok(new ResponseMessageDto(
+	        HttpStatus.OK.value(),
+	        "Employee profile fetched successfully",
+	        userService.getEmployeeFullProfile(employeeId)
+	    ));
+	}
+
+	@Operation(
+	    summary = "SuperAdmin - All Employee Profiles",
+	    description = "Paginated list of all employees with full details"
+	)
+	@GetMapping("/superadmin/employees")
+	public ResponseEntity<ResponseMessageDto> getAllEmployeeProfiles(
+	        @RequestParam(defaultValue = "0") int page,
+	        @RequestParam(defaultValue = "10") int size,
+	        @RequestParam(required = false) String search) {
+	    return ResponseEntity.ok(new ResponseMessageDto(
+	        HttpStatus.OK.value(),
+	        "All employee profiles fetched",
+	        userService.getAllEmployeeProfiles(page, size, search)
+	    ));
+	}
+	
+	@Operation(
+		    summary = "My Profile",
+		    description = "Logged-in user can see their own complete profile details"
+		)
+		@GetMapping("/my-profile")
+		public ResponseEntity<ResponseMessageDto> getMyProfile() {
+		    return ResponseEntity.ok(new ResponseMessageDto(
+		        HttpStatus.OK.value(),
+		        "Profile fetched successfully",
+		        userService.getMyProfile()
+		    ));
+		}
+	
 
 }

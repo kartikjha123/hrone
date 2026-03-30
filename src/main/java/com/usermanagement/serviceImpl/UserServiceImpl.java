@@ -43,8 +43,10 @@ import com.usermanagement.requestDto.PrivilegeRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
 import com.usermanagement.responseDto.EmployeeManagerMappingResponseDto;
+import com.usermanagement.responseDto.EmployeeProfileDto;
 import com.usermanagement.responseDto.EmployeeResponseDto;
 import com.usermanagement.responseDto.ManagerDashboardResponseDto;
+import com.usermanagement.responseDto.OrgHierarchyDto;
 import com.usermanagement.responseDto.PrivilegeDTO;
 import com.usermanagement.responseDto.RoleDto;
 import com.usermanagement.responseDto.UserResponseDto;
@@ -543,6 +545,205 @@ public class UserServiceImpl implements UserService {
 	    dto.setTotalEmployees(employeeRepository.countByManagerId(manager.getId()));
 
 	    return dto;
+	}
+	
+	
+	// ════════════════════════════════════════════════════
+	// SUPER ADMIN - Full Org Hierarchy
+	// ════════════════════════════════════════════════════
+	@Override
+	public OrgHierarchyDto getOrgHierarchy() {
+
+	    List<Employee> allEmployees = employeeRepository.findAll();
+
+	    // Managers dhundo (jinke under koi hai)
+	    List<Employee> managers = allEmployees.stream()
+	        .filter(e -> e.getManager() == null
+	            && allEmployees.stream()
+	                .anyMatch(sub -> sub.getManager() != null
+	                    && sub.getManager().getId().equals(e.getId())))
+	        .collect(Collectors.toList());
+
+	    // Hierarchy build karo
+	    List<OrgHierarchyDto.ManagerHierarchyDto> hierarchy =
+	        managers.stream().map(manager -> {
+
+	            OrgHierarchyDto.ManagerHierarchyDto dto =
+	                new OrgHierarchyDto.ManagerHierarchyDto();
+
+	            dto.setManagerId(manager.getId());
+	            dto.setManagerCode(manager.getEmployeeCode());
+	            dto.setManagerName(
+	                manager.getFirstName() + " " + manager.getLastName()
+	            );
+	            dto.setManagerDesignation(manager.getDesignation());
+	            dto.setManagerDepartment(manager.getDepartment());
+
+	            if (manager.getUser() != null) {
+	                dto.setManagerEmail(manager.getUser().getEmail());
+	            }
+
+	            // Is manager ke under employees
+	            List<Employee> reportees =
+	                employeeRepository.findByManagerId(manager.getId());
+
+	            dto.setTotalReportees((long) reportees.size());
+
+	            List<EmployeeProfileDto.ReporteeDto> reporteeDtos =
+	                reportees.stream().map(emp -> {
+	                    EmployeeProfileDto.ReporteeDto r =
+	                        new EmployeeProfileDto.ReporteeDto();
+	                    r.setEmployeeId(emp.getId());
+	                    r.setEmployeeCode(emp.getEmployeeCode());
+	                    r.setFullName(
+	                        emp.getFirstName() + " " + emp.getLastName()
+	                    );
+	                    r.setDesignation(emp.getDesignation());
+	                    r.setDepartment(emp.getDepartment());
+	                    return r;
+	                }).collect(Collectors.toList());
+
+	            dto.setEmployees(reporteeDtos);
+	            return dto;
+
+	        }).collect(Collectors.toList());
+
+	    // Summary counts
+	    long totalManagers = managers.size();
+	    long unassigned = allEmployees.stream()
+	        .filter(e -> e.getManager() == null)
+	        .count() - totalManagers;
+
+	    OrgHierarchyDto result = new OrgHierarchyDto();
+	    result.setTotalEmployees((long) allEmployees.size());
+	    result.setTotalManagers(totalManagers);
+	    result.setUnassignedEmployees(Math.max(unassigned, 0));
+	    result.setHierarchy(hierarchy);
+
+	    return result;
+	}
+
+	// ════════════════════════════════════════════════════
+	// Employee Full Profile
+	// ════════════════════════════════════════════════════
+	@Override
+	public EmployeeProfileDto getEmployeeFullProfile(Long employeeId) {
+
+	    Employee emp = employeeRepository.findById(employeeId)
+	        .orElseThrow(() -> new RuntimeException(
+	            "Employee not found with ID: " + employeeId
+	        ));
+
+	    return buildEmployeeProfile(emp);
+	}
+
+	// ════════════════════════════════════════════════════
+	// All Employees with Full Profile (Paginated)
+	// ════════════════════════════════════════════════════
+	@Override
+	public Page<EmployeeProfileDto> getAllEmployeeProfiles(
+	        int page, int size, String search) {
+
+	    Pageable pageable = PageRequest.of(page, size);
+	    Page<User> users = userRepository.searchUsers(search, pageable);
+	    return users.map(u -> {
+	        if (u.getEmployee() != null) {
+	            return buildEmployeeProfile(u.getEmployee());
+	        }
+	        return null;
+	    });
+	}
+
+	// ─── Private Helper ────────────────────────────────
+	private EmployeeProfileDto buildEmployeeProfile(Employee emp) {
+
+	    EmployeeProfileDto dto = new EmployeeProfileDto();
+
+	    // Basic Info
+	    dto.setEmployeeId(emp.getId());
+	    dto.setEmployeeCode(emp.getEmployeeCode());
+	    dto.setFirstName(emp.getFirstName());
+	    dto.setLastName(emp.getLastName());
+	    dto.setFullName(emp.getFirstName() + " " + emp.getLastName());
+	    dto.setPhone(emp.getPhone());
+	    dto.setDepartment(emp.getDepartment());
+	    dto.setDesignation(emp.getDesignation());
+	    dto.setJoiningDate(emp.getJoiningDate());
+	    dto.setDateOfBirth(emp.getDateOfBirth());
+	    dto.setRemainingAR(emp.getRemainingAR());
+
+	    // User Info
+	    if (emp.getUser() != null) {
+	        dto.setUserId(emp.getUser().getId());
+	        dto.setUsername(emp.getUser().getUsername());
+	        dto.setEmail(emp.getUser().getEmail());
+
+	        List<String> roles = emp.getUser().getRoles()
+	            .stream()
+	            .map(r -> r.getName())
+	            .collect(Collectors.toList());
+	        dto.setRoles(roles);
+	    }
+
+	    // Manager Info (Reporting To)
+	    if (emp.getManager() != null) {
+	        Employee manager = emp.getManager();
+	        dto.setManagerId(manager.getId());
+	        dto.setManagerCode(manager.getEmployeeCode());
+	        dto.setManagerName(
+	            manager.getFirstName() + " " + manager.getLastName()
+	        );
+	        dto.setManagerDesignation(manager.getDesignation());
+	        dto.setManagerDepartment(manager.getDepartment());
+	    }
+
+	    // Reportees (jo is employee ko report karte hain)
+	    List<Employee> reportees =
+	        employeeRepository.findByManagerId(emp.getId());
+
+	    dto.setTotalReportees((long) reportees.size());
+
+	    List<EmployeeProfileDto.ReporteeDto> reporteeDtos =
+	        reportees.stream().map(r -> {
+	            EmployeeProfileDto.ReporteeDto rd =
+	                new EmployeeProfileDto.ReporteeDto();
+	            rd.setEmployeeId(r.getId());
+	            rd.setEmployeeCode(r.getEmployeeCode());
+	            rd.setFullName(r.getFirstName() + " " + r.getLastName());
+	            rd.setDesignation(r.getDesignation());
+	            rd.setDepartment(r.getDepartment());
+	            return rd;
+	        }).collect(Collectors.toList());
+
+	    dto.setReportees(reporteeDtos);
+
+	    return dto;
+	}
+	
+	@Override
+	public EmployeeProfileDto getMyProfile() {
+
+	    // ✅ Logged-in user ka username lo
+	    Authentication auth = SecurityContextHolder
+	        .getContext().getAuthentication();
+
+	    String username = auth.getName();
+
+	    // ✅ User dhundo
+	    User user = userRepository.findByUsername(username)
+	        .orElseThrow(() -> new RuntimeException(
+	            "User not found: " + username
+	        ));
+
+	    // ✅ Employee check karo
+	    if (user.getEmployee() == null) {
+	        throw new RuntimeException(
+	            "No employee profile found for user: " + username
+	        );
+	    }
+
+	    // ✅ Full profile build karo
+	    return buildEmployeeProfile(user.getEmployee());
 	}
 	
 

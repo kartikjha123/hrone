@@ -15,8 +15,10 @@ import com.usermanagement.requestDto.PrivilegeRequestDto;
 import com.usermanagement.requestDto.RoleRequestDto;
 import com.usermanagement.requestDto.UserRequestDto;
 import com.usermanagement.responseDto.EmployeeManagerMappingResponseDto;
+import com.usermanagement.responseDto.EmployeeProfileDto;
 import com.usermanagement.responseDto.EmployeeResponseDto;
 import com.usermanagement.responseDto.ManagerDashboardResponseDto;
+import com.usermanagement.responseDto.OrgHierarchyDto;
 import com.usermanagement.responseDto.PrivilegeDTO;
 import com.usermanagement.responseDto.RoleDto;
 import com.usermanagement.responseDto.UserResponseDto;
@@ -68,4 +70,11 @@ public interface UserService {
 	List<EmployeeResponseDto> getUnassignedEmployees();
 	
 	ManagerDashboardResponseDto getManagerDashboard(int page,int size);
+	
+	// SuperAdmin APIs
+	OrgHierarchyDto getOrgHierarchy();
+	EmployeeProfileDto getEmployeeFullProfile(Long employeeId);
+	Page<EmployeeProfileDto> getAllEmployeeProfiles(int page, int size, String search);
+	
+	EmployeeProfileDto getMyProfile();
 }
